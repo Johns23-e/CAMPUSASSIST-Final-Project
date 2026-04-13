@@ -1,0 +1,96 @@
+<section class="auth-page">
+  <label class="auth-language">
+    <span>{{ t('language') }}:</span>
+    <select [value]="currentLanguage()" (change)="setLanguage($event)">
+      <option value="en">English</option>
+      <option value="tl">Tagalog</option>
+      <option value="bi">Bisaya</option>
+      <option value="war">Waray-Waray</option>
+    </select>
+  </label>
+
+  <a class="back-home" [routerLink]="['/']" aria-label="Back to home">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M15 5 8 12l7 7M9 12h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>{{ t('backHome') }}</span>
+  </a>
+
+  <div class="auth-brand">
+    <img src="/EVSU.png" alt="EVSU Logo" onerror="this.src='/EVSU.svg'" />
+    <h1>CAMPUSASSIST COMPLAINT SYSTEM</h1>
+    <p>Eastern Visayas State University</p>
+  </div>
+
+  <div class="auth-card">
+    <div class="auth-card-head">
+      <h2>{{ mode === 'login' ? t('authSignIn') : t('authCreate') }}</h2>
+      <p>{{ role === 'student' ? t('studentPortal') : t('adminPortal') }}</p>
+    </div>
+
+    <div class="role-switch">
+      <button type="button" [class.active]="role === 'student'" (click)="setRole('student')">{{ t('student') }}</button>
+      <button type="button" [class.active]="role === 'admin'" (click)="setRole('admin')">{{ t('admin') }}</button>
+    </div>
+
+    @if (mode === 'login') {
+      <form class="auth-form" action="#" (submit)="handleLogin($event, username.value, password.value)">
+        <label>
+          <span>{{ t('emailId') }}</span>
+          <input #username type="text" [placeholder]="role === 'student' ? t('studentIdOrEmail') : t('adminIdOrEmail')" />
+        </label>
+
+        <label>
+          <span>{{ t('password') }}</span>
+          <div class="password-field">
+            <input #password [type]="showLoginPassword ? 'text' : 'password'" [placeholder]="t('enterPassword')" />
+            <button type="button" class="eye-btn" (click)="toggleLoginPasswordVisibility()" [attr.aria-label]="showLoginPassword ? t('hidePassword') : t('showPassword')">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
+            </button>
+          </div>
+        </label>
+
+        <a href="#" class="minor-link">{{ t('forgotPassword') }}</a>
+        <button type="submit" class="submit-btn">{{ t('logIn') }}</button>
+      </form>
+      @if (role === 'admin') {
+        <p class="hint">{{ t('adminDemoHint') }}</p>
+      }
+      @if (authError) {
+        <p class="error-text">{{ authError }}</p>
+      }
+      <p class="switch-line">
+        {{ t('noAccount') }}
+        <a [routerLink]="['/signup']" [queryParams]="{ role: role }">{{ t('signUp') }}</a>
+      </p>
+    } @else {
+      <form class="auth-form" action="#">
+        <label>
+          <span>{{ t('fullName') }}</span>
+          <input type="text" [placeholder]="t('enterFullName')" />
+        </label>
+
+        <label>
+          <span>{{ t('emailId') }}</span>
+          <input type="text" [placeholder]="role === 'student' ? t('studentIdOrEmail') : t('adminIdOrEmail')" />
+        </label>
+
+        <label>
+          <span>{{ t('password') }}</span>
+          <div class="password-field">
+            <input [type]="showSignupPassword ? 'text' : 'password'" [placeholder]="t('createPassword')" />
+            <button type="button" class="eye-btn" (click)="toggleSignupPasswordVisibility()" [attr.aria-label]="showSignupPassword ? t('hidePassword') : t('showPassword')">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
+            </button>
+          </div>
+        </label>
+
+        <button type="submit" class="submit-btn">{{ t('createAccount') }}</button>
+      </form>
+      <p class="switch-line">
+        {{ t('alreadyAccount') }}
+        <a [routerLink]="['/login']" [queryParams]="{ role: role }">{{ t('logIn') }}</a>
+      </p>
+    }
+  </div>
+</section>
+
+<footer class="auth-footer">© 2026 Eastern Visayas State University</footer>

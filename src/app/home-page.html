@@ -1,0 +1,206 @@
+<div class="page-shell">
+  <header class="top-nav">
+    <div class="brand">
+      <div class="brand-logo">
+        <img
+          src="/EVSU.png"
+          alt="EVSU Logo"
+          [class.hidden]="logoFallback"
+          (error)="logoFallback = true"
+        />
+        <img
+          src="/EVSU.svg"
+          alt="EVSU Logo Fallback"
+          [class.hidden]="!logoFallback"
+        />
+      </div>
+      <p class="brand-text">CAMPUSASSIST COMPLAINT SYSTEM</p>
+    </div>
+
+    <nav class="menu">
+      @for (item of navItems; track item) {
+        <a href="#" class="menu-item">{{ t(item) }}</a>
+      }
+    </nav>
+
+    <div class="actions">
+      <a [routerLink]="['/login']" [queryParams]="{ role: 'student' }" class="login-btn">
+        {{ t('login') }} <span class="profile-dot"></span>
+      </a>
+      <label class="language language-select">
+        <span>{{ t('language') }}:</span>
+        <select [value]="currentLanguage()" (change)="setLanguage($event)">
+          <option value="en">English</option>
+          <option value="tl">Tagalog</option>
+          <option value="bi">Bisaya</option>
+          <option value="war">Waray-Waray</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="hero-card">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <h1>{{ t('welcomeTitle') }}</h1>
+        <p>{{ t('welcomeSubtitle') }}</p>
+        <button type="button" class="lodge-btn">{{ t('lodgeNewComplaint') }}</button>
+      </div>
+    </section>
+
+    <section class="announcements">
+      <h2>{{ t('systemOverview') }}</h2>
+      <div class="announcement-list">
+        @for (item of overviewMetrics; track item.text) {
+          <article class="announcement-item">
+            <span class="announcement-icon" aria-hidden="true">
+              @switch (item.icon) {
+                @case ('bolt') {
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 5 13h6l-1 9 9-12h-6l1-8Z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+                @case ('shield') {
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 5 6v6c0 5 3.4 8.8 7 10 3.6-1.2 7-5 7-10V6l-7-3Z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+                @default {
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M8 3h8l4 4v14H4V3h4Zm4 0v5h5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+              }
+            </span>
+            <span>{{ item.text }}</span>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="how-it-works">
+      <h2>{{ t('howItWorks') }}</h2>
+      <div class="steps">
+        @for (step of howItWorks; track step.title) {
+          <article class="step-card">
+            <span class="step-icon" aria-hidden="true">
+              @switch (step.icon) {
+                @case ('user') {
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M20 21a8 8 0 1 0-16 0M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+                @case ('document') {
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M7 3h8l4 4v14H7V3Zm8 0v5h5M10 13h6M10 17h6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+                @case ('chart') {
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M4 20h16M7 16v-4m5 4V8m5 8v-6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+                @default {
+                  <svg viewBox="0 0 24 24" fill="none"><path d="m6 12 4 4 8-8" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.9"/></svg>
+                }
+              }
+            </span>
+            <h3>{{ step.title }}</h3>
+            <p>{{ step.description }}</p>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="announcements">
+      <h2>{{ t('recentAnnouncements') }}</h2>
+      <div class="announcement-list">
+        @for (announcement of announcements; track announcement) {
+          <button type="button" class="announcement-item">
+            <span class="announcement-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M14 3v5l4 4v1H6v-1l4-4V3h4Zm-2 10v8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span>{{ announcement }}</span>
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="about-system">
+      <div class="about-card">
+        <h2>{{ t('aboutSystem') }}</h2>
+        <p class="about-lead">
+          {{ t('aboutLead') }}
+        </p>
+        <ul class="about-list">
+          @for (item of aboutHighlights; track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+      </div>
+    </section>
+
+    <section class="announcements">
+      <h2>{{ t('supportResponse') }}</h2>
+      <div class="announcement-list">
+        @for (item of supportHighlights; track item.text) {
+          <article class="announcement-item">
+            <span class="announcement-icon" aria-hidden="true">
+              @switch (item.icon) {
+                @case ('pin') {
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11Z" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.2" stroke="currentColor" stroke-width="1.9"/></svg>
+                }
+                @case ('clock') {
+                  <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.9"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+                @default {
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M9 13 6.5 10.5a2 2 0 0 0-2.8 2.8l3.2 3.2a3.5 3.5 0 0 0 5 0l2.1-2.1m1-1L17.5 11a2 2 0 0 1 2.8 2.8l-3.2 3.2a3.5 3.5 0 0 1-5 0L10 14.9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                }
+              }
+            </span>
+            <span>{{ item.text }}</span>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="school-pages">
+      <h2>{{ t('officialSchoolPages') }}</h2>
+      <div class="school-page-list">
+        @for (page of schoolPagesSafe; track page.title) {
+          <article class="school-page-card">
+            <span class="school-page-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M14 8h-2a2 2 0 0 0-2 2v2H8v3h2v5h3v-5h2.2l.8-3H13v-1.6c0-.3.2-.4.4-.4H16V8h-2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/></svg>
+            </span>
+            <span class="school-page-title">{{ page.title }}</span>
+            <span class="school-page-subtitle">{{ page.subtitle }}</span>
+
+            <iframe
+              class="school-page-embed"
+              [src]="page.safeEmbed"
+              title="Facebook page preview"
+              loading="lazy"
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            ></iframe>
+
+            <a class="school-page-link" [href]="page.link" target="_blank" rel="noopener">
+              {{ t('visitFacebook') }}
+            </a>
+          </article>
+        }
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-grid">
+      <section>
+        <h3>CampusAssist Complaint System</h3>
+        <p>Eastern Visayas State University</p>
+        <p>Empowering a safer and more responsive campus environment.</p>
+      </section>
+      <section>
+        <h3>{{ t('footerContact') }}</h3>
+        <p>Email: complaintsupport@evsu.edu.ph</p>
+        <p>Phone: +63 53 123 4567</p>
+        <p>{{ t('officeHours') }}: Mon-Fri, 8:00 AM - 5:00 PM</p>
+      </section>
+      <section>
+        <h3>{{ t('footerQuickLinks') }}</h3>
+        <a href="#">{{ t('privacyPolicy') }}</a>
+        <a href="#">{{ t('userGuidelines') }}</a>
+        <a href="#">{{ t('helpCenter') }}</a>
+      </section>
+    </div>
+    <p class="footer-bottom">© 2026 Eastern Visayas State University. All rights reserved.</p>
+  </footer>
+</div>

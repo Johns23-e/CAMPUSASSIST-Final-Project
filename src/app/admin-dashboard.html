@@ -1,0 +1,125 @@
+<div class="admin-shell">
+  <header class="admin-top">
+    <div class="left-brand">
+      <img src="/EVSU.png" alt="EVSU Logo" onerror="this.src='/EVSU.svg'" />
+      <span>CAMPUSASSIST COMPLAINT SYSTEM</span>
+    </div>
+    <label class="admin-language">
+      <span>{{ t('language') }}:</span>
+      <select [value]="currentLanguage()" (change)="setLanguage($event)">
+        <option value="en">English</option>
+        <option value="tl">Tagalog</option>
+        <option value="bi">Bisaya</option>
+        <option value="war">Waray-Waray</option>
+      </select>
+    </label>
+    <a class="logout" [routerLink]="['/login']" [queryParams]="{ role: 'admin' }">{{ t('logout') }}</a>
+  </header>
+
+  <main class="admin-main">
+    <aside class="sidebar">
+      @for (item of sidebarItems; track item) {
+        <a [class.active]="item.active" href="#">{{ t(item.key) }}</a>
+      }
+    </aside>
+
+    <section class="content">
+      <h1>{{ t('adminDashboardOverview') }}</h1>
+
+      <div class="stats-grid">
+        @for (item of stats; track item.label) {
+          <article class="stat" [class]="item.tone">
+            <h3>{{ item.label }}</h3>
+            <p>{{ item.value }}</p>
+            <span>{{ item.meta }}</span>
+          </article>
+        }
+      </div>
+
+      <div class="charts-row">
+        <article class="panel">
+          <h2>{{ t('monthlySubmissions') }}</h2>
+          <div class="chart-bars">
+            @for (item of monthlySubmissions; track item.month) {
+              <div class="bar-col">
+                <div class="bar" [style.height.%]="(item.value / maxMonthlyValue) * 100"></div>
+                <span>{{ item.month }}</span>
+              </div>
+            }
+          </div>
+        </article>
+
+        <article class="panel">
+          <h2>{{ t('statusBreakdown') }}</h2>
+          <div class="chart-stack">
+            @for (item of statusBreakdown; track item.month) {
+              <div class="stack-col">
+                <div class="stack-bar">
+                  <span class="seg new" [style.height.%]="(item.new / maxStatusTotal) * 100"></span>
+                  <span class="seg in-progress" [style.height.%]="(item.inProgress / maxStatusTotal) * 100"></span>
+                  <span class="seg review" [style.height.%]="(item.review / maxStatusTotal) * 100"></span>
+                  <span class="seg resolved" [style.height.%]="(item.resolved / maxStatusTotal) * 100"></span>
+                </div>
+                <span>{{ item.month }}</span>
+              </div>
+            }
+          </div>
+        </article>
+
+        <article class="panel">
+          <h2>{{ t('topCategories') }}</h2>
+          <div class="category-list">
+            @for (item of topCategories; track item.name) {
+              <div class="category-row">
+                <span>{{ item.name }}</span>
+                <div class="track">
+                  <div class="fill" [style.width.%]="item.value" [style.background]="item.tone"></div>
+                </div>
+                <small>{{ item.value }}%</small>
+              </div>
+            }
+          </div>
+        </article>
+      </div>
+
+      <div class="tables-row">
+        <article class="panel wide">
+          <h2>{{ t('priorityComplaints') }}</h2>
+          <table>
+            <thead><tr><th>Comp. ID</th><th>Priority</th><th>Title</th><th>Date Filed</th><th>Assignee</th><th>Status</th></tr></thead>
+            <tbody>
+              @for (item of priorityComplaints; track item.id) {
+                <tr>
+                  <td>{{ item.id }}</td>
+                  <td><span class="badge" [class.high]="item.priority === 'High'" [class.med]="item.priority === 'Medium'">{{ item.priority }}</span></td>
+                  <td>{{ item.title }}</td>
+                  <td>{{ item.date }}</td>
+                  <td>{{ item.assignee }}</td>
+                  <td>{{ item.status }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </article>
+        <article class="panel">
+          <h2>{{ t('recentAssignments') }}</h2>
+          <ul>
+            @for (item of recentAssignments; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </article>
+        <article class="panel">
+          <h2>{{ t('notifications') }}</h2>
+          <ul>
+            @for (item of notifications; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="admin-footer">© 2026 Eastern Visayas State University</footer>
+</div>

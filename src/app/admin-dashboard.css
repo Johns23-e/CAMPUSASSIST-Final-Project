@@ -1,0 +1,58 @@
+:host { display: block; min-height: 100dvh; background: #edf1f4; font-family: "Times New Roman", Times, serif; color: #1f2328; }
+* { box-sizing: border-box; }
+.admin-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; background: #fff; border-bottom: 1px solid #d2d7dc; box-shadow: 0 4px 12px rgba(20, 35, 48, 0.08); }
+.left-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #4d0a14; }
+.left-brand img { width: 36px; height: 36px; border-radius: 50%; }
+.admin-language { display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; color: #2f3a45; }
+.admin-language select { border: 1px solid #c7ced6; border-radius: 6px; background: #fff; padding: 4px 8px; font-family: "Times New Roman", Times, serif; }
+.logout { text-decoration: none; background: #6b0f1a; color: #fff; padding: 8px 14px; border-radius: 8px; }
+.admin-main { display: grid; grid-template-columns: 230px 1fr; min-height: calc(100dvh - 118px); }
+.sidebar { background: #6b0f1a; padding: 14px; display: grid; align-content: start; gap: 8px; }
+.sidebar a { color: #fff; text-decoration: none; padding: 10px; border-radius: 8px; background: rgba(255, 255, 255, .08); }
+.sidebar a.active { background: #3e0810; }
+.content { padding: 14px; }
+.content h1 { margin: 0 0 12px; color: #1e1f21; font-size: 1.8rem; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.stat { padding: 12px; border-radius: 10px; color: #fff; box-shadow: 0 8px 15px rgba(17, 26, 36, 0.18); }
+.stat h3 { margin: 0; font-size: .82rem; min-height: 30px; }
+.stat p { margin: 6px 0 2px; font-size: 1.9rem; font-weight: 700; }
+.stat span { font-size: .75rem; opacity: .95; }
+.red { background: #8c1111; } .dark { background: #5d0b17; } .gold { background: #b18419; } .green { background: #2f7e2f; } .maroon { background: #6e1f1f; } .amber { background: #c4982f; }
+
+.charts-row, .tables-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+.panel { background: #fff; border: 1px solid #d4dce3; border-radius: 10px; padding: 10px; }
+.panel h2 { margin: 0 0 8px; font-size: 1rem; }
+
+.chart-bars, .chart-stack { height: 176px; background: #f0f4f8; border-radius: 8px; padding: 10px 8px 6px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 6px; align-items: end; }
+.bar-col, .stack-col { display: grid; justify-items: center; gap: 4px; }
+.bar-col span, .stack-col span { font-size: .7rem; color: #425466; }
+.bar { width: 100%; max-width: 14px; background: linear-gradient(180deg, #8f1212, #5d0b17); border-radius: 5px 5px 0 0; }
+.stack-bar { width: 100%; max-width: 16px; height: 130px; display: flex; flex-direction: column-reverse; border-radius: 5px 5px 0 0; overflow: hidden; background: #e8edf2; }
+.seg { display: block; }
+.seg.new { background: #7f0000; }
+.seg.in-progress { background: #8a1f1f; }
+.seg.review { background: #c79b2d; }
+.seg.resolved { background: #2f7e2f; }
+
+.category-list { height: 176px; background: #f0f4f8; border-radius: 8px; padding: 10px; display: grid; gap: 8px; align-content: start; }
+.category-row { display: grid; grid-template-columns: 90px 1fr 36px; gap: 8px; align-items: center; font-size: .78rem; }
+.track { height: 10px; background: #e0e7ee; border-radius: 999px; overflow: hidden; }
+.fill { height: 100%; border-radius: 999px; }
+
+table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+th, td { border-bottom: 1px solid #e0e6ec; padding: 6px; text-align: left; }
+.badge { padding: 2px 6px; border-radius: 999px; color: #fff; font-size: .75rem; }
+.high { background: #9d1010; } .med { background: #a88620; }
+ul { margin: 0; padding-left: 18px; font-size: .88rem; line-height: 1.45; }
+.admin-footer { background: #6b0f1a; color: #fff; text-align: center; padding: 12px; }
+
+@media (max-width: 1100px) {
+  .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .charts-row, .tables-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .admin-main { grid-template-columns: 1fr; }
+  .sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-top { flex-wrap: wrap; }
+}
