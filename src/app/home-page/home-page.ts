@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
-import { LanguageCode, LanguageService } from './language.service';
+import { LanguageCode, LanguageService } from '../language.service';
 
 @Component({
   selector: 'app-home-page',
   imports: [RouterLink],
   templateUrl: './home-page.html',
-  styleUrl: './app.css'
+  styleUrl: '../app.css'
 })
 export class HomePage {
   constructor(

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LanguageCode, LanguageService } from './language.service';
+import { AuthStateService } from '../auth-state.service';
+import { LanguageCode, LanguageService } from '../language.service';
 
 @Component({
   selector: 'app-auth-page',
@@ -12,6 +13,7 @@ export class AuthPage {
   protected mode: 'login' | 'signup' = 'login';
   protected role: 'student' | 'admin' = 'student';
   protected authError = '';
+  protected authSuccess = '';
   protected showLoginPassword = false;
   protected showSignupPassword = false;
 
@@ -21,6 +23,7 @@ export class AuthPage {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
+    private readonly authState: AuthStateService,
     private readonly language: LanguageService
   ) {
     this.route.data.subscribe((data) => {
@@ -45,6 +48,7 @@ export class AuthPage {
   protected handleLogin(event: Event, username: string, password: string): void {
     event.preventDefault();
     this.authError = '';
+    this.authSuccess = '';
 
     if (this.role === 'admin') {
       if (username === this.adminUsername && password === this.adminPassword) {
@@ -55,7 +59,28 @@ export class AuthPage {
       return;
     }
 
-    this.router.navigate(['/']);
+    const result = this.authState.loginStudent(username, password);
+    if (!result.ok) {
+      this.authError = result.message;
+      return;
+    }
+
+    this.router.navigate(['/student-dashboard']);
+  }
+
+  protected handleSignup(event: Event, fullName: string, username: string, password: string): void {
+    event.preventDefault();
+    this.authError = '';
+    this.authSuccess = '';
+
+    const result = this.authState.registerStudent(fullName, username, password);
+    if (!result.ok) {
+      this.authError = result.message;
+      return;
+    }
+
+    this.authSuccess = result.message;
+    this.router.navigate(['/login'], { queryParams: { role: this.role } });
   }
 
   protected toggleLoginPasswordVisibility(): void {

@@ -35,13 +35,13 @@
       <form class="auth-form" action="#" (submit)="handleLogin($event, username.value, password.value)">
         <label>
           <span>{{ t('emailId') }}</span>
-          <input #username type="text" [placeholder]="role === 'student' ? t('studentIdOrEmail') : t('adminIdOrEmail')" />
+          <input #username type="text" [placeholder]="role === 'student' ? t('studentIdOrEmail') : t('adminIdOrEmail')" required />
         </label>
 
         <label>
           <span>{{ t('password') }}</span>
           <div class="password-field">
-            <input #password [type]="showLoginPassword ? 'text' : 'password'" [placeholder]="t('enterPassword')" />
+            <input #password [type]="showLoginPassword ? 'text' : 'password'" [placeholder]="t('enterPassword')" required />
             <button type="button" class="eye-btn" (click)="toggleLoginPasswordVisibility()" [attr.aria-label]="showLoginPassword ? t('hidePassword') : t('showPassword')">
               <svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
             </button>
@@ -62,21 +62,21 @@
         <a [routerLink]="['/signup']" [queryParams]="{ role: role }">{{ t('signUp') }}</a>
       </p>
     } @else {
-      <form class="auth-form" action="#">
+      <form class="auth-form" action="#" (submit)="handleSignup($event, signupName.value, signupUsername.value, signupPassword.value)">
         <label>
           <span>{{ t('fullName') }}</span>
-          <input type="text" [placeholder]="t('enterFullName')" />
+          <input #signupName type="text" [placeholder]="t('enterFullName')" required />
         </label>
 
         <label>
           <span>{{ t('emailId') }}</span>
-          <input type="text" [placeholder]="role === 'student' ? t('studentIdOrEmail') : t('adminIdOrEmail')" />
+          <input #signupUsername type="text" [placeholder]="role === 'student' ? t('studentIdOrEmail') : t('adminIdOrEmail')" required />
         </label>
 
         <label>
           <span>{{ t('password') }}</span>
           <div class="password-field">
-            <input [type]="showSignupPassword ? 'text' : 'password'" [placeholder]="t('createPassword')" />
+            <input #signupPassword [type]="showSignupPassword ? 'text' : 'password'" [placeholder]="t('createPassword')" required />
             <button type="button" class="eye-btn" (click)="toggleSignupPasswordVisibility()" [attr.aria-label]="showSignupPassword ? t('hidePassword') : t('showPassword')">
               <svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
             </button>
@@ -85,6 +85,12 @@
 
         <button type="submit" class="submit-btn">{{ t('createAccount') }}</button>
       </form>
+      @if (authError) {
+        <p class="error-text">{{ authError }}</p>
+      }
+      @if (authSuccess) {
+        <p class="success-text">{{ authSuccess }}</p>
+      }
       <p class="switch-line">
         {{ t('alreadyAccount') }}
         <a [routerLink]="['/login']" [queryParams]="{ role: role }">{{ t('logIn') }}</a>

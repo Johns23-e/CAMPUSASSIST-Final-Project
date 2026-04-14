@@ -45,7 +45,7 @@
       <div class="hero-content">
         <h1>{{ t('welcomeTitle') }}</h1>
         <p>{{ t('welcomeSubtitle') }}</p>
-        <button type="button" class="lodge-btn">{{ t('lodgeNewComplaint') }}</button>
+        <a class="lodge-btn" [routerLink]="['/complaints/new']">{{ t('lodgeNewComplaint') }}</a>
       </div>
     </section>
 

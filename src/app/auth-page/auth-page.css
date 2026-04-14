@@ -269,6 +269,13 @@
   font-weight: 700;
 }
 
+.success-text {
+  margin: 8px 0 0;
+  color: #1f6b33;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 .auth-footer {
   background: #6b0f1a;
   color: #fff;

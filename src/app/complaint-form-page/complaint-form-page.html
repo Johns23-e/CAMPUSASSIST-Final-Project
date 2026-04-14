@@ -1,0 +1,198 @@
+<section class="complaint-page">
+  <a class="back-home" [routerLink]="['/student-dashboard']" aria-label="Back to dashboard">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M15 5 8 12l7 7M9 12h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Back to Dashboard</span>
+  </a>
+
+  <div class="page-head">
+    <img src="/EVSU.png" alt="EVSU Logo" onerror="this.src='/EVSU.svg'" />
+    <h1>CampusAssist Complaint Intake Form</h1>
+    <p>Eastern Visayas State University - Student Complaint Reporting Portal</p>
+  </div>
+
+  <div class="form-steps" aria-label="Complaint submission steps">
+    <div class="step-item active">
+      <span>1</span>
+      <p>Verify Account</p>
+    </div>
+    <div class="step-item">
+      <span>2</span>
+      <p>Provide Details</p>
+    </div>
+    <div class="step-item">
+      <span>3</span>
+      <p>Submit Case</p>
+    </div>
+  </div>
+
+  <div class="verification-card">
+    <h2>Account Verification</h2>
+    <p>
+      Only registered students can submit a formal complaint. Click the verification button first, then proceed when your
+      account is confirmed.
+    </p>
+    <div class="verification-row">
+      <label>
+        Logged-in Username / Student Email
+        <input type="text" [value]="currentUsername || 'No active student login'" readonly />
+      </label>
+      <button type="button" class="action-btn" (click)="checkRegistrationStatus()">Check Registration Status</button>
+    </div>
+
+    @if (statusType !== 'idle') {
+      <p class="status-message" [class.error]="statusType === 'error'" [class.success]="statusType === 'success'">
+        {{ statusMessage }}
+      </p>
+    }
+
+    @if (!currentUsername) {
+      <button type="button" class="link-btn" (click)="goToLogin()">Log In as Student</button>
+    }
+  </div>
+
+  <form class="complaint-form-card" (submit)="submitComplaint($event)">
+    <h2>Detailed Complaint Information</h2>
+    <p class="form-note">
+      Please provide complete and truthful information. Incomplete details may delay case review and resolution.
+    </p>
+
+    <div class="privacy-mode-card">
+      <h3>Identity Protection Option</h3>
+      <p>
+        You may choose to keep your identity hidden in complaint handling communications. Only authorized university case
+        officers will have restricted access for verification and protection purposes.
+      </p>
+      <div class="privacy-actions">
+        <button type="button" class="privacy-btn" [class.active]="!submitAnonymously" (click)="setAnonymousMode(false)">
+          Submit with Full Identity
+        </button>
+        <button type="button" class="privacy-btn" [class.active]="submitAnonymously" (click)="setAnonymousMode(true)">
+          Submit with Identity Protection
+        </button>
+      </div>
+      @if (submitAnonymously) {
+        <p class="privacy-note">
+          Identity protection enabled: your name and direct identifiers will be hidden from non-authorized recipients.
+        </p>
+      }
+    </div>
+
+    <div class="form-section-head">
+      <h3>Student Information</h3>
+      <p>Basic student profile details for case ownership and response routing.</p>
+    </div>
+
+    <div class="form-grid">
+      <label>
+        Full Name
+        <input type="text" [required]="!submitAnonymously" [disabled]="submitAnonymously" placeholder="Juan Dela Cruz" />
+      </label>
+
+      <label>
+        Student ID Number
+        <input type="text" [required]="!submitAnonymously" [disabled]="submitAnonymously" placeholder="2023-12345" />
+      </label>
+
+      <label>
+        College / Department
+        <input type="text" required placeholder="College of Engineering" />
+      </label>
+
+      <label>
+        Program / Year Level
+        <input type="text" required placeholder="BSIT - 3rd Year" />
+      </label>
+
+      <label>
+        Official Email Address
+        <input type="email" [required]="!submitAnonymously" [disabled]="submitAnonymously" placeholder="juan.delacruz@evsu.edu.ph" />
+      </label>
+
+      <label>
+        Contact Number
+        <input type="tel" [required]="!submitAnonymously" [disabled]="submitAnonymously" placeholder="+63 9xx xxx xxxx" />
+      </label>
+    </div>
+
+    <div class="form-section-head">
+      <h3>Incident Information</h3>
+      <p>Tell us what happened with clear, factual, and chronological details.</p>
+    </div>
+
+    <div class="form-grid">
+
+      <label>
+        Complaint Category
+        <select required>
+          <option value="" disabled selected>Select complaint category</option>
+          <option value="Academic Concern">Academic Concern</option>
+          <option value="Faculty or Staff Conduct">Faculty or Staff Conduct</option>
+          <option value="Bullying, Harassment, or Safety">Bullying, Harassment, or Safety</option>
+          <option value="Facilities, Utilities, and Maintenance">Facilities, Utilities, and Maintenance</option>
+          <option value="Student Services and Registrar">Student Services and Registrar</option>
+          <option value="Financial, Scholarship, or Billing">Financial, Scholarship, or Billing</option>
+          <option value="Other">Other</option>
+        </select>
+      </label>
+
+      <label>
+        Incident Date
+        <input type="date" required />
+      </label>
+
+      <label class="full-width">
+        Incident Location
+        <input type="text" required placeholder="Example: College Building, Room 204" />
+      </label>
+
+      <label class="full-width">
+        People Involved (if applicable)
+        <textarea rows="3" placeholder="Provide names, roles, and section/office if known."></textarea>
+      </label>
+
+      <label class="full-width">
+        Complaint Summary
+        <input type="text" required placeholder="One-sentence summary of your concern" />
+      </label>
+
+      <label class="full-width">
+        Detailed Narrative
+        <textarea rows="7" required placeholder="Describe the incident in chronological order. Include dates, actions taken, and any prior reports."></textarea>
+      </label>
+
+      <label class="full-width">
+        Preferred Resolution / Requested Action
+        <textarea rows="4" required placeholder="Explain what outcome or action you are requesting from the university office."></textarea>
+      </label>
+
+      <label class="full-width">
+        Supporting Evidence (optional)
+        <input type="file" />
+        <small>Accepted: screenshots, photos, or document proofs relevant to the case.</small>
+      </label>
+
+      <label class="full-width checkbox-row">
+        <input type="checkbox" required />
+        <span>I confirm that the details provided are accurate and submitted in good faith.</span>
+      </label>
+
+      @if (!registrationChecked || !isRegisteredUser) {
+        <p class="submit-helper full-width">
+          Please complete account verification above before submitting this complaint.
+        </p>
+      }
+
+      <div class="form-actions full-width">
+        <button type="submit" class="submit-btn" [disabled]="!registrationChecked || !isRegisteredUser">
+          Proceed to Submit Complaint
+        </button>
+      </div>
+    </div>
+  </form>
+
+  @if (complaintSubmitted) {
+    <div class="success-card" role="status" aria-live="polite">
+      Complaint submitted successfully. Keep your account active so you can track updates and responses.
+    </div>
+  }
+</section>

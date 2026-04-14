@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LanguageCode, LanguageService } from './language.service';
+import { LanguageCode, LanguageService } from '../language.service';
 
 @Component({
   selector: 'app-admin-dashboard',

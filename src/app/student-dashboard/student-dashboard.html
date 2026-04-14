@@ -1,0 +1,146 @@
+<section class="replica-shell">
+  <header class="replica-topbar">
+    <div class="brand">
+      <img src="/EVSU.png" alt="EVSU Logo" onerror="this.src='/EVSU.svg'" />
+      <span>i-EVSU Complaint System</span>
+    </div>
+
+    <div class="top-actions">
+      <button type="button" class="login-btn" (click)="logout()">Logout</button>
+      <label class="lang">
+        <span>{{ t('language') }}:</span>
+        <select [value]="currentLanguage()" (change)="setLanguage($event)">
+          <option value="en">English</option>
+          <option value="tl">Tagalog</option>
+          <option value="bi">Bisaya</option>
+          <option value="war">Waray-Waray</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <div class="replica-body">
+    <aside class="left-menu">
+      @for (item of sidebarLinks; track item) {
+        <a href="#" [class.active]="item === 'sdSidebarDashboard'">{{ t(item) }}</a>
+      }
+    </aside>
+
+    <main class="main-content">
+      <h1>{{ t('sdOverviewTitle') }}</h1>
+
+      <section class="metric-row">
+        <article class="metric card-maroon"><p>{{ t('sdMyTotalComplaints') }}</p><strong>{{ totalComplaints }}</strong></article>
+        <article class="metric card-gold"><p>{{ t('sdUnderReview') }}</p><strong>{{ activeComplaints }}</strong></article>
+        <article class="metric card-green"><p>{{ t('sdResolved') }}</p><strong>{{ resolvedComplaints }}</strong></article>
+        <article class="metric card-amber"><p>{{ t('sdSatisfiedFeedback') }}</p><strong>88%</strong></article>
+        <article class="metric card-dark"><p>{{ t('sdNewNotifications') }}</p><strong>{{ notificationCount }}</strong></article>
+        <article class="metric card-wine"><p>{{ t('sdSystemMessages') }}</p><strong>{{ unreadMessages }}</strong></article>
+      </section>
+
+      <section class="quick-panels">
+        <article class="panel">
+          <h2>{{ t('sdMyComplaintSubmissions') }}</h2>
+          <p class="subtitle">{{ t('sdTotalCountLast6Months') }}</p>
+          <div class="chart">
+            @for (item of submissionsTrend; track item.month) {
+              <div class="chart-col">
+                <span>{{ item.value }}</span>
+                <div class="chart-bar" [style.height.%]="(item.value / maxTrendValue) * 100"></div>
+                <small>{{ t(item.month) }}</small>
+              </div>
+            }
+          </div>
+        </article>
+
+        <article class="panel">
+          <h2>{{ t('sdFeaturedForumsTopics') }}</h2>
+          <div class="topic-grid">
+            @for (topic of featuredTopics; track topic.title) {
+              <article class="topic" [class.dark-topic]="topic.tone === 'maroon'">
+                <p>{{ t(topic.title) }}</p>
+                <small>{{ t(topic.age) }}</small>
+              </article>
+            }
+          </div>
+        </article>
+
+        <article class="panel">
+          <h2>{{ t('sdTrackComplaint') }}</h2>
+          <div class="track-row">
+            <input type="text" [placeholder]="t('sdSearch')" />
+            <button type="button">{{ t('sdSearch') }}</button>
+          </div>
+          <h2 class="sub-heading">{{ t('sdLatestAnnouncements') }}</h2>
+          <ul class="bullet-list">
+            @for (item of recentUpdates; track item) {
+              <li>{{ t(item) }}</li>
+            }
+          </ul>
+        </article>
+      </section>
+
+      <section class="bottom-panels">
+        <article class="panel complaints-panel">
+          <div class="panel-title-row">
+            <h2>{{ t('sdMyComplaints') }}</h2>
+            <select>
+              <option>{{ t('sdSortBy') }}</option>
+              <option>{{ t('sdLatest') }}</option>
+              <option>{{ t('sdStatus') }}</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>{{ t('sdRefId') }}</th>
+                  <th>{{ t('sdCategory') }}</th>
+                  <th>{{ t('sdTitle') }}</th>
+                  <th>{{ t('sdDateFiled') }}</th>
+                  <th>{{ t('sdLastUpdate') }}</th>
+                  <th>{{ t('sdStatus') }}</th>
+                  <th>{{ t('sdActions') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of complaints; track item.id) {
+                  <tr>
+                    <td>{{ item.id }}</td>
+                    <td><span class="category-tag">{{ item.category.split(' ')[0] }}</span></td>
+                    <td>{{ item.title }}</td>
+                    <td>{{ item.dateFiled }}</td>
+                    <td>{{ item.updatedAt }}</td>
+                    <td><span class="status-tag" [class.resolved]="item.status === 'Resolved'">{{ statusText(item.status) }}</span></td>
+                    <td><a href="#">{{ t('sdViewDetailMessage') }}</a></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel">
+          <h2>{{ t('sdComplaintStatusUpdates') }}</h2>
+          <ul class="bullet-list">
+            @for (item of statusUpdates; track item) {
+              <li>{{ t(item) }}</li>
+            }
+          </ul>
+        </article>
+
+        <article class="panel messages-panel">
+          <h2>{{ t('sdMyMessages') }}</h2>
+          <ul class="bullet-list">
+            @for (item of myMessages; track item) {
+              <li>{{ t(item) }}</li>
+            }
+          </ul>
+          <button type="button" class="submit-new-btn" [routerLink]="['/complaints/new']">{{ t('sdSubmitNewComplaint') }}</button>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <footer class="replica-footer">{{ t('sdFooter') }}</footer>
+</section>
