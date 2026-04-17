@@ -1,0 +1,196 @@
+<section class="officer-shell">
+  <header class="topbar">
+    <div class="brand">
+      <img src="/EVSU.png" alt="EVSU Logo" onerror="this.src='/EVSU.svg'" />
+      <span>CAMPUSASSIST OFFICER DASHBOARD</span>
+    </div>
+
+    <div class="top-actions">
+      <label class="lang">
+        <span>{{ t('language') }}:</span>
+        <select [value]="currentLanguage()" (change)="setLanguage($event)">
+          <option value="en">EN</option>
+          <option value="tl">TL</option>
+          <option value="bi">BI</option>
+          <option value="war">WAR</option>
+        </select>
+      </label>
+      <button type="button" class="login-btn" (click)="logout()">LOGOUT</button>
+    </div>
+  </header>
+
+  <div class="body">
+    <aside class="sidebar">
+      @for (item of sidebarLinks; track item.label) {
+        <a href="#" [class.active]="item.active">{{ item.label }}</a>
+      }
+    </aside>
+
+    <main class="content">
+      <h1>OFFICER DASHBOARD - SSG OVERVIEW</h1>
+
+      <section class="metrics">
+        @for (m of metrics; track m.label) {
+          <article class="tile" [class]="m.tone">
+            <p class="label">{{ m.label }}</p>
+            <strong class="value">{{ m.value }}</strong>
+            @if (m.meta) {
+              <span class="meta">{{ m.meta }}</span>
+            }
+          </article>
+        }
+      </section>
+
+      <section class="upper-grid">
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Complaint Intake & Distribution</h2>
+              <p class="panel-subtitle">Total Received, last 6 months</p>
+            </div>
+          </div>
+          <div class="intake-chart">
+            @for (item of intakeTrend; track item.month) {
+              <div class="intake-col">
+                <div class="bars">
+                  <span class="bar a" [style.height.%]="(item.campusA / maxIntakeValue) * 100"></span>
+                  <span class="bar b" [style.height.%]="(item.campusB / maxIntakeValue) * 100"></span>
+                </div>
+                <small>{{ item.month }}</small>
+              </div>
+            }
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>PRIORITY STUDENT CONCERNS</h2>
+            </div>
+          </div>
+          <div class="concerns-grid">
+            @for (c of concerns; track c.title) {
+              <article class="concern" [class.dark]="c.tone === 'dark'">
+                <p>{{ c.title }}</p>
+                <small>{{ c.age }}</small>
+              </article>
+            }
+          </div>
+        </article>
+
+        <div class="right-stack">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>SEARCH CASES</h2>
+              </div>
+            </div>
+            <div class="search-row">
+              <input type="text" placeholder="Search Reference ID, Complainant..." />
+              <button type="button">Search</button>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>SSG BROADCASTS & NOTICES</h2>
+              </div>
+            </div>
+            <ul class="broadcasts">
+              @for (b of broadcasts; track b.message) {
+                <li>
+                  <span class="msg">{{ b.message }}</span>
+                  <span class="date">{{ b.date }}</span>
+                </li>
+              }
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="lower-grid">
+        <article class="panel wide">
+          <div class="panel-head">
+            <div>
+              <h2>MY ASSIGNED CASES</h2>
+            </div>
+          </div>
+          <div class="table-head">
+            <label>
+              <span>Sort by</span>
+              <select>
+                <option>Priority</option>
+                <option>Date Assigned</option>
+                <option>Status</option>
+              </select>
+            </label>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ref. ID</th>
+                  <th>Priority</th>
+                  <th>Title</th>
+                  <th>Complainant</th>
+                  <th>Date Assigned</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of assignedCases; track row.id) {
+                  <tr>
+                    <td>{{ row.id }}</td>
+                    <td>
+                      <span class="pill" [class.high]="row.priority === 'HIGH'" [class.med]="row.priority !== 'HIGH'">
+                        {{ row.priority }}
+                      </span>
+                    </td>
+                    <td>{{ row.title }}</td>
+                    <td>{{ row.complainant }}</td>
+                    <td>{{ row.dateAssigned }}</td>
+                    <td class="pre">{{ row.status }}</td>
+                    <td class="pre action">{{ row.action }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>INVESTIGATION UPDATES</h2>
+            </div>
+          </div>
+          <ul class="simple-list">
+            @for (item of investigationUpdates; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>MY MESSAGES</h2>
+              <p class="panel-subtitle">OFFICER MESSAGES</p>
+            </div>
+          </div>
+          <ul class="simple-list">
+            @for (item of officerMessages; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+          <button type="button" class="compose">Compose Internal Message</button>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <footer class="footer">© 2024 Eastern Visayas State University</footer>
+</section>
+

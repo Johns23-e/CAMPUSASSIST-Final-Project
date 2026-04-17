@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthStateService } from '../auth-state.service';
+import { ComplaintAssignee, ComplaintRecord, ComplaintService } from '../complaint.service';
 import { LanguageCode, LanguageService } from '../language.service';
 
 @Component({
@@ -9,7 +11,29 @@ import { LanguageCode, LanguageService } from '../language.service';
   styleUrl: './admin-dashboard.css'
 })
 export class AdminDashboard {
-  constructor(private readonly language: LanguageService) {}
+  constructor(
+    private readonly language: LanguageService,
+    private readonly authState: AuthStateService,
+    private readonly complaintService: ComplaintService
+  ) {
+    this.reload();
+  }
+
+  protected complaints: ComplaintRecord[] = [];
+  protected students: Array<{ fullName: string; username: string }> = [];
+
+  protected readonly officers = [
+    { username: 'johnroque.abina@evsu.edu.ph', displayName: 'Vicepresident' }
+  ];
+
+  protected readonly resolutionDraft: Record<string, string> = {};
+
+  protected reload(): void {
+    this.complaints = this.complaintService.list();
+    this.students = this.authState
+      .listRegisteredStudents()
+      .map((s) => ({ fullName: s.fullName, username: s.username }));
+  }
 
   protected readonly sidebarItems = [
     { key: 'dashboard', active: true },
@@ -72,9 +96,9 @@ export class AdminDashboard {
   ];
 
   protected readonly priorityComplaints = [
-    { id: 'ID00123', priority: 'High', title: 'Grading Discrepancy', date: '2024-05-18', assignee: 'Prof. Gomez', status: 'Under Review' },
-    { id: 'ID00124', priority: 'Medium', title: 'Late Enrollment Concern', date: '2024-05-18', assignee: 'Registrar Office', status: 'For Action' },
-    { id: 'ID00125', priority: 'High', title: 'Scholarship Delay', date: '2024-05-19', assignee: 'Student Services', status: 'In Progress' }
+    { id: 'ID00123', priority: 'High', title: 'Grading Discrepancy', date: '2024-05-18', assignee: 'JOHN ROQUE ABINA', status: 'Under Review' },
+    { id: 'ID00124', priority: 'Medium', title: 'Late Enrollment Concern', date: '2024-05-18', assignee: 'MALQUISTO CHERWYN', status: 'For Action' },
+    { id: 'ID00125', priority: 'High', title: 'Scholarship Delay', date: '2024-05-19', assignee: 'JOANNA MAE MAGTABOG', status: 'In Progress' }
   ];
 
   protected readonly recentAssignments = [
@@ -96,6 +120,34 @@ export class AdminDashboard {
   protected maxStatusTotal = Math.max(
     ...this.statusBreakdown.map((item) => item.new + item.inProgress + item.review + item.resolved)
   );
+
+  protected assign(id: string, raw: string): void {
+    const next: ComplaintAssignee =
+      raw === 'unassigned'
+        ? { type: 'unassigned' }
+        : raw === 'admin'
+          ? { type: 'admin' }
+          : { type: 'officer', username: raw, displayName: this.officers.find((o) => o.username === raw)?.displayName ?? raw };
+
+    this.complaintService.assign(id, next);
+    this.reload();
+  }
+
+  protected setDraft(id: string, value: string): void {
+    this.resolutionDraft[id] = value;
+  }
+
+  protected resolve(id: string): void {
+    const notes = (this.resolutionDraft[id] ?? '').trim() || 'Resolved by admin.';
+    this.complaintService.resolve(id, notes, { type: 'admin' });
+    this.resolutionDraft[id] = '';
+    this.reload();
+  }
+
+  protected removeStudent(username: string): void {
+    this.authState.removeRegisteredStudent(username);
+    this.reload();
+  }
 
   protected t(key: string): string {
     return this.language.t(key);

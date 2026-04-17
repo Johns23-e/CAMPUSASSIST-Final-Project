@@ -24,8 +24,6 @@ export class HomePage {
 
   protected readonly navItems: string[] = [
     'home',
-    'lodgeComplaint',
-    'trackStatus',
     'announcements',
     'resources'
   ];

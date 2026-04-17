@@ -2,11 +2,10 @@
   <header class="replica-topbar">
     <div class="brand">
       <img src="/EVSU.png" alt="EVSU Logo" onerror="this.src='/EVSU.svg'" />
-      <span>i-EVSU Complaint System</span>
+      <span>CAMPUSASSIST STUDENT DASHBOARD</span>
     </div>
 
     <div class="top-actions">
-      <button type="button" class="login-btn" (click)="logout()">Logout</button>
       <label class="lang">
         <span>{{ t('language') }}:</span>
         <select [value]="currentLanguage()" (change)="setLanguage($event)">
@@ -16,6 +15,7 @@
           <option value="war">Waray-Waray</option>
         </select>
       </label>
+      <button type="button" class="login-btn" (click)="logout()">Logout</button>
     </div>
   </header>
 

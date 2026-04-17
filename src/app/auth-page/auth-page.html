@@ -23,13 +23,15 @@
   <div class="auth-card">
     <div class="auth-card-head">
       <h2>{{ mode === 'login' ? t('authSignIn') : t('authCreate') }}</h2>
-      <p>{{ role === 'student' ? t('studentPortal') : t('adminPortal') }}</p>
+      <p>{{ mode === 'signup' ? t('studentPortal') : role === 'student' ? t('studentPortal') : t('adminPortal') }}</p>
     </div>
 
-    <div class="role-switch">
-      <button type="button" [class.active]="role === 'student'" (click)="setRole('student')">{{ t('student') }}</button>
-      <button type="button" [class.active]="role === 'admin'" (click)="setRole('admin')">{{ t('admin') }}</button>
-    </div>
+    @if (mode === 'login') {
+      <div class="role-switch">
+        <button type="button" [class.active]="role === 'student'" (click)="setRole('student')">{{ t('student') }}</button>
+        <button type="button" [class.active]="role === 'admin'" (click)="setRole('admin')">{{ t('admin') }}</button>
+      </div>
+    }
 
     @if (mode === 'login') {
       <form class="auth-form" action="#" (submit)="handleLogin($event, username.value, password.value)">
@@ -62,15 +64,24 @@
         <a [routerLink]="['/signup']" [queryParams]="{ role: role }">{{ t('signUp') }}</a>
       </p>
     } @else {
-      <form class="auth-form" action="#" (submit)="handleSignup($event, signupName.value, signupUsername.value, signupPassword.value)">
+      <form
+        class="auth-form"
+        action="#"
+        (submit)="handleSignup($event, signupName.value, signupEvsuId.value, signupUsername.value, signupPassword.value)"
+      >
         <label>
           <span>{{ t('fullName') }}</span>
           <input #signupName type="text" [placeholder]="t('enterFullName')" required />
         </label>
 
         <label>
+          <span>EVSU ID</span>
+          <input #signupEvsuId type="text" placeholder="0000-00000" required />
+        </label>
+
+        <label>
           <span>{{ t('emailId') }}</span>
-          <input #signupUsername type="text" [placeholder]="role === 'student' ? t('studentIdOrEmail') : t('adminIdOrEmail')" required />
+          <input #signupUsername type="text" [placeholder]="t('studentIdOrEmail')" required />
         </label>
 
         <label>

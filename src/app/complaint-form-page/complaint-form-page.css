@@ -73,6 +73,10 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  font: inherit;
 }
 
 .step-item span {
@@ -202,6 +206,25 @@ textarea:focus {
   margin-top: 14px;
 }
 
+.step-card {
+  border: 1px solid #d7dfe7;
+  border-radius: 10px;
+  background: #fbfdff;
+  padding: 14px;
+}
+
+.step-card h3 {
+  margin: 0;
+  color: #4d0a14;
+  font-size: 1.08rem;
+}
+
+.muted {
+  margin: 6px 0 12px;
+  color: #4d5d6d;
+  font-size: 0.92rem;
+}
+
 .form-section-head {
   margin: 14px 0 8px;
   padding-top: 8px;
@@ -306,6 +329,11 @@ small {
   justify-content: flex-end;
 }
 
+.form-actions.split {
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .submit-helper {
   margin: 0;
   border: 1px solid #ecd2d2;
@@ -321,6 +349,17 @@ small {
 .submit-btn:disabled {
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 12px;
+  border: 1px solid #d7dfe7;
+  border-radius: 10px;
+  background: #fff;
 }
 
 .success-card {
@@ -346,5 +385,9 @@ small {
 
   .form-actions .submit-btn {
     width: 100%;
+  }
+
+  .review-grid {
+    grid-template-columns: 1fr;
   }
 }

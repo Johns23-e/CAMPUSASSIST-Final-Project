@@ -118,6 +118,120 @@
           </ul>
         </article>
       </div>
+
+      <div class="tables-row" style="grid-template-columns: 2fr 1fr;">
+        <article class="panel wide">
+          <h2>Complaint Assignment & Resolution</h2>
+          <p style="margin: 0 0 10px; color: #4d5d6d; font-size: 0.92rem;">
+            View all submitted complaints, assign them to SSG Officer, or resolve as Admin.
+          </p>
+
+          @if (complaints.length === 0) {
+            <p style="margin: 0; color: #4d5d6d;">No complaints submitted yet.</p>
+          } @else {
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Case ID</th>
+                    <th>Priority</th>
+                    <th>Category</th>
+                    <th>Summary</th>
+                    <th>Created By</th>
+                    <th>Status</th>
+                    <th>Assign To</th>
+                    <th>Resolve</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of complaints; track c.id) {
+                    <tr>
+                      <td>{{ c.id }}</td>
+                      <td>
+                        <span class="badge" [class.high]="c.priority === 'High'" [class.med]="c.priority === 'Medium'">
+                          {{ c.priority }}
+                        </span>
+                      </td>
+                      <td>{{ c.category }}</td>
+                      <td>{{ c.summary }}</td>
+                      <td>
+                        @if ('username' in c.createdBy) {
+                          {{ c.createdBy.username }}
+                        } @else {
+                          Anonymous
+                        }
+                      </td>
+                      <td>{{ c.status }}</td>
+                      <td>
+                        <select
+                          (change)="assign(c.id, $any($event.target).value)"
+                          [value]="c.assignee.type === 'unassigned' ? 'unassigned' : c.assignee.type === 'admin' ? 'admin' : c.assignee.username"
+                        >
+                          <option value="unassigned">Unassigned</option>
+                          <option value="admin">Admin</option>
+                          <optgroup label="SSG Officers">
+                            @for (o of officers; track o.username) {
+                              <option [value]="o.username">{{ o.displayName }}</option>
+                            }
+                          </optgroup>
+                        </select>
+                      </td>
+                      <td>
+                        @if (c.status !== 'Resolved') {
+                          <div style="display: grid; gap: 6px;">
+                            <input
+                              type="text"
+                              placeholder="Resolution notes"
+                              [value]="resolutionDraft[c.id] || ''"
+                              (input)="setDraft(c.id, $any($event.target).value)"
+                            />
+                            <button type="button" class="logout" style="padding: 6px 10px;" (click)="resolve(c.id)">
+                              Resolve
+                            </button>
+                          </div>
+                        } @else {
+                          <small style="color:#4d5d6d;">Resolved</small>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </article>
+
+        <article class="panel">
+          <h2>User Management</h2>
+          <p style="margin: 0 0 10px; color: #4d5d6d; font-size: 0.92rem;">
+            Manage registered students (local demo storage).
+          </p>
+
+          <h3 style="margin: 10px 0 6px; font-size: 0.95rem;">Students</h3>
+          @if (students.length === 0) {
+            <p style="margin: 0; color: #4d5d6d;">No registered students yet.</p>
+          } @else {
+            <ul style="margin: 0; padding-left: 18px;">
+              @for (s of students; track s.username) {
+                <li style="margin-bottom: 8px;">
+                  <strong>{{ s.fullName }}</strong><br />
+                  <small style="color:#4d5d6d;">{{ s.username }}</small><br />
+                  <button type="button" class="logout" style="padding: 6px 10px; margin-top: 6px;" (click)="removeStudent(s.username)">
+                    Remove
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+
+          <h3 style="margin: 12px 0 6px; font-size: 0.95rem;">SSG Officers</h3>
+          <ul style="margin: 0; padding-left: 18px;">
+            @for (o of officers; track o.username) {
+              <li><strong>{{ o.displayName }}</strong> <small style="color:#4d5d6d;">({{ o.username }})</small></li>
+            }
+          </ul>
+        </article>
+      </div>
     </section>
   </main>
 

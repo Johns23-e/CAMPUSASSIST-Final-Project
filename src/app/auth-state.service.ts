@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 
 interface RegisteredStudent {
   fullName: string;
+  evsuId: string;
   username: string;
   password: string;
 }
@@ -10,15 +11,31 @@ interface RegisteredStudent {
 export class AuthStateService {
   private readonly registeredStudentsKey = 'campusassist_registered_students';
   private readonly currentStudentKey = 'campusassist_current_student';
-  private readonly defaultStudent: RegisteredStudent = {
-    fullName: 'John Roque Abina',
-    username: 'johnroque.abina@evsu.edu.ph',
-    password: 'John@123'
-  };
+  private readonly defaultStudents: RegisteredStudent[] = [
+    {
+      fullName: 'JOHN ROQUE ABINA',
+      evsuId: '2026-00001',
+      username: 'johnroque.abina@evsu.edu.ph',
+      password: 'John@123'
+    },
+    {
+      fullName: 'MALQUISTO CHERWYN',
+      evsuId: '2026-00002',
+      username: 'cherwyn.malquisto@evsu.edu.ph',
+      password: 'Cherwyn@123'
+    },
+    {
+      fullName: 'JOANNA MAE MAGTABOG',
+      evsuId: '2026-00003',
+      username: 'joannamae.magtobog@evsu.edu.ph',
+      password: 'Joanna@123'
+    }
+  ];
 
-  registerStudent(fullName: string, username: string, password: string): { ok: boolean; message: string } {
+  registerStudent(fullName: string, evsuId: string, username: string, password: string): { ok: boolean; message: string } {
     const normalizedUsername = username.trim().toLowerCase();
-    if (!fullName.trim() || !normalizedUsername || !password.trim()) {
+    const normalizedEvsuId = evsuId.trim();
+    if (!fullName.trim() || !normalizedEvsuId || !normalizedUsername || !password.trim()) {
       return { ok: false, message: 'Please complete all required signup fields.' };
     }
 
@@ -30,6 +47,7 @@ export class AuthStateService {
 
     students.push({
       fullName: fullName.trim(),
+      evsuId: normalizedEvsuId,
       username: normalizedUsername,
       password: password.trim()
     });
@@ -77,12 +95,32 @@ export class AuthStateService {
     return this.getRegisteredStudents().some((student) => student.username === normalizedUsername);
   }
 
+  getRegisteredStudent(username: string): RegisteredStudent | null {
+    const normalizedUsername = username.trim().toLowerCase();
+    if (!normalizedUsername) return null;
+    return this.getRegisteredStudents().find((student) => student.username === normalizedUsername) ?? null;
+  }
+
   logoutStudent(): void {
     if (!this.canUseStorage()) {
       return;
     }
 
     window.localStorage.removeItem(this.currentStudentKey);
+  }
+
+  listRegisteredStudents(): RegisteredStudent[] {
+    return this.getRegisteredStudents();
+  }
+
+  removeRegisteredStudent(username: string): void {
+    const normalizedUsername = username.trim().toLowerCase();
+    if (!normalizedUsername || !this.canUseStorage()) return;
+    const students = this.getRegisteredStudents().filter((s) => s.username !== normalizedUsername);
+    this.saveRegisteredStudents(students);
+    if (this.getCurrentStudent() === normalizedUsername) {
+      this.logoutStudent();
+    }
   }
 
   private setCurrentStudent(username: string): void {
@@ -95,24 +133,25 @@ export class AuthStateService {
 
   private getRegisteredStudents(): RegisteredStudent[] {
     if (!this.canUseStorage()) {
-      return [this.defaultStudent];
+      return [...this.defaultStudents];
     }
 
     const raw = window.localStorage.getItem(this.registeredStudentsKey);
     if (!raw) {
-      return [this.defaultStudent];
+      return [...this.defaultStudents];
     }
 
     try {
       const parsed = JSON.parse(raw) as RegisteredStudent[];
       if (!Array.isArray(parsed)) {
-        return [this.defaultStudent];
+        return [...this.defaultStudents];
       }
 
-      const hasDefault = parsed.some((student) => student.username === this.defaultStudent.username);
-      return hasDefault ? parsed : [this.defaultStudent, ...parsed];
+      const byUsername = new Set(parsed.map((s) => s.username));
+      const mergedDefaults = this.defaultStudents.filter((d) => !byUsername.has(d.username));
+      return [...mergedDefaults, ...parsed];
     } catch {
-      return [this.defaultStudent];
+      return [...this.defaultStudents];
     }
   }
 

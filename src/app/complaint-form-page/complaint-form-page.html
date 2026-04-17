@@ -11,183 +11,221 @@
   </div>
 
   <div class="form-steps" aria-label="Complaint submission steps">
-    <div class="step-item active">
+    <button type="button" class="step-item" [class.active]="currentStep === 1" (click)="goToStep(1)">
       <span>1</span>
-      <p>Verify Account</p>
-    </div>
-    <div class="step-item">
+      <p>Information</p>
+    </button>
+    <button type="button" class="step-item" [class.active]="currentStep === 2" (click)="goToStep(2)">
       <span>2</span>
-      <p>Provide Details</p>
-    </div>
-    <div class="step-item">
+      <p>Details</p>
+    </button>
+    <button type="button" class="step-item" [class.active]="currentStep === 3" (click)="goToStep(3)">
       <span>3</span>
-      <p>Submit Case</p>
-    </div>
-  </div>
-
-  <div class="verification-card">
-    <h2>Account Verification</h2>
-    <p>
-      Only registered students can submit a formal complaint. Click the verification button first, then proceed when your
-      account is confirmed.
-    </p>
-    <div class="verification-row">
-      <label>
-        Logged-in Username / Student Email
-        <input type="text" [value]="currentUsername || 'No active student login'" readonly />
-      </label>
-      <button type="button" class="action-btn" (click)="checkRegistrationStatus()">Check Registration Status</button>
-    </div>
-
-    @if (statusType !== 'idle') {
-      <p class="status-message" [class.error]="statusType === 'error'" [class.success]="statusType === 'success'">
-        {{ statusMessage }}
-      </p>
-    }
-
-    @if (!currentUsername) {
-      <button type="button" class="link-btn" (click)="goToLogin()">Log In as Student</button>
-    }
+      <p>Review & Submit</p>
+    </button>
   </div>
 
   <form class="complaint-form-card" (submit)="submitComplaint($event)">
-    <h2>Detailed Complaint Information</h2>
-    <p class="form-note">
-      Please provide complete and truthful information. Incomplete details may delay case review and resolution.
-    </p>
+    <h2>Complaint Form</h2>
+    <p class="form-note">Fast flow: verify account, fill key details, then submit. Optional fields are minimized.</p>
 
-    <div class="privacy-mode-card">
-      <h3>Identity Protection Option</h3>
-      <p>
-        You may choose to keep your identity hidden in complaint handling communications. Only authorized university case
-        officers will have restricted access for verification and protection purposes.
-      </p>
-      <div class="privacy-actions">
-        <button type="button" class="privacy-btn" [class.active]="!submitAnonymously" (click)="setAnonymousMode(false)">
-          Submit with Full Identity
-        </button>
-        <button type="button" class="privacy-btn" [class.active]="submitAnonymously" (click)="setAnonymousMode(true)">
-          Submit with Identity Protection
-        </button>
-      </div>
-      @if (submitAnonymously) {
-        <p class="privacy-note">
-          Identity protection enabled: your name and direct identifiers will be hidden from non-authorized recipients.
+    @if (currentStep === 1) {
+      <section class="step-card">
+        <h3>Step 1 - Information</h3>
+        <p class="muted">Verify your student account and choose your privacy mode.</p>
+        <div class="verification-row">
+          <label>
+            Student Email (registered)
+            <input
+              type="email"
+              [value]="draft.reporterEmail"
+              (input)="draft.reporterEmail = $any($event.target).value"
+              placeholder="juan.delacruz@evsu.edu.ph"
+              required
+            />
+          </label>
+          <button type="button" class="action-btn" (click)="checkRegistrationStatus()">Verify Account</button>
+        </div>
+
+        @if (statusType !== 'idle') {
+          <p class="status-message" [class.error]="statusType === 'error'" [class.success]="statusType === 'success'">
+            {{ statusMessage }}
+          </p>
+        }
+
+        <p class="muted" style="margin-top: 10px;">
+          Tip: If you already logged in as student, your email will auto-fill here.
         </p>
-      }
-    </div>
 
-    <div class="form-section-head">
-      <h3>Student Information</h3>
-      <p>Basic student profile details for case ownership and response routing.</p>
-    </div>
+        <div class="privacy-mode-card">
+          <h3>Identity Protection</h3>
+          <div class="privacy-actions">
+            <button type="button" class="privacy-btn" [class.active]="!submitAnonymously" (click)="setAnonymousMode(false)">
+              Show My Identity
+            </button>
+            <button type="button" class="privacy-btn" [class.active]="submitAnonymously" (click)="setAnonymousMode(true)">
+              Hide My Identity
+            </button>
+          </div>
+          @if (submitAnonymously) {
+            <p class="privacy-note">Your identity is hidden from non-authorized recipients.</p>
+          }
+        </div>
 
-    <div class="form-grid">
-      <label>
-        Full Name
-        <input type="text" [required]="!submitAnonymously" [disabled]="submitAnonymously" placeholder="Juan Dela Cruz" />
-      </label>
+        <div class="form-actions">
+          <button type="button" class="submit-btn" (click)="continueToDetails()">Continue to Details</button>
+        </div>
+      </section>
+    }
 
-      <label>
-        Student ID Number
-        <input type="text" [required]="!submitAnonymously" [disabled]="submitAnonymously" placeholder="2023-12345" />
-      </label>
+    @if (currentStep === 2) {
+      <section class="step-card">
+        <h3>Step 2 - Incident Details</h3>
+        <p class="muted">Only essential fields are required to save time.</p>
 
-      <label>
-        College / Department
-        <input type="text" required placeholder="College of Engineering" />
-      </label>
+        @if (!submitAnonymously) {
+          <div class="review-grid" style="margin-top: 0;">
+            <div class="full-width">
+              <strong>Verified Account</strong><br />
+              <small style="color:#4d5d6d;">This information is auto-filled to save time.</small>
+            </div>
+            <label class="full-width">
+              Full Name
+              <input
+                type="text"
+                [value]="draft.reporterFullName"
+                (input)="draft.reporterFullName = $any($event.target).value"
+                placeholder="Your full name"
+                required
+              />
+            </label>
+            <div class="full-width">
+              <strong>Email:</strong> {{ draft.reporterEmail || verifiedEmail }}
+            </div>
+          </div>
+        }
 
-      <label>
-        Program / Year Level
-        <input type="text" required placeholder="BSIT - 3rd Year" />
-      </label>
+        <div class="form-grid">
+          <label>
+            Complaint Category
+            <select [value]="draft.category" (change)="draft.category = $any($event.target).value" required>
+              <option value="" disabled>Select complaint category</option>
+              <option value="Academic Concern">Academic Concern</option>
+              <option value="Faculty or Staff Conduct">Faculty or Staff Conduct</option>
+              <option value="Bullying, Harassment, or Safety">Bullying, Harassment, or Safety</option>
+              <option value="Facilities, Utilities, and Maintenance">Facilities, Utilities, and Maintenance</option>
+              <option value="Student Services and Registrar">Student Services and Registrar</option>
+              <option value="Financial, Scholarship, or Billing">Financial, Scholarship, or Billing</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
 
-      <label>
-        Official Email Address
-        <input type="email" [required]="!submitAnonymously" [disabled]="submitAnonymously" placeholder="juan.delacruz@evsu.edu.ph" />
-      </label>
+          <label>
+            Priority Level
+            <select [value]="draft.priority" (change)="draft.priority = $any($event.target).value" required>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </label>
 
-      <label>
-        Contact Number
-        <input type="tel" [required]="!submitAnonymously" [disabled]="submitAnonymously" placeholder="+63 9xx xxx xxxx" />
-      </label>
-    </div>
+          <label>
+            Incident Date
+            <input type="date" [value]="draft.incidentDate" (input)="draft.incidentDate = $any($event.target).value" required />
+          </label>
 
-    <div class="form-section-head">
-      <h3>Incident Information</h3>
-      <p>Tell us what happened with clear, factual, and chronological details.</p>
-    </div>
+          <label>
+            Incident Location
+            <input
+              type="text"
+              [value]="draft.location"
+              (input)="draft.location = $any($event.target).value"
+              required
+              placeholder="Example: College Building, Room 204"
+            />
+          </label>
 
-    <div class="form-grid">
+          <label class="full-width">
+            Complaint Summary
+            <input
+              type="text"
+              [value]="draft.summary"
+              (input)="draft.summary = $any($event.target).value"
+              required
+              placeholder="Short summary (1 sentence)"
+            />
+          </label>
 
-      <label>
-        Complaint Category
-        <select required>
-          <option value="" disabled selected>Select complaint category</option>
-          <option value="Academic Concern">Academic Concern</option>
-          <option value="Faculty or Staff Conduct">Faculty or Staff Conduct</option>
-          <option value="Bullying, Harassment, or Safety">Bullying, Harassment, or Safety</option>
-          <option value="Facilities, Utilities, and Maintenance">Facilities, Utilities, and Maintenance</option>
-          <option value="Student Services and Registrar">Student Services and Registrar</option>
-          <option value="Financial, Scholarship, or Billing">Financial, Scholarship, or Billing</option>
-          <option value="Other">Other</option>
-        </select>
-      </label>
+          <label class="full-width">
+            What happened?
+            <textarea
+              rows="5"
+              [value]="draft.narrative"
+              (input)="draft.narrative = $any($event.target).value"
+              required
+              placeholder="Write the important details in chronological order."
+            ></textarea>
+          </label>
 
-      <label>
-        Incident Date
-        <input type="date" required />
-      </label>
+          <label class="full-width">
+            What result do you want?
+            <textarea
+              rows="4"
+              [value]="draft.requestedAction"
+              (input)="draft.requestedAction = $any($event.target).value"
+              required
+              placeholder="State your requested resolution."
+            ></textarea>
+          </label>
 
-      <label class="full-width">
-        Incident Location
-        <input type="text" required placeholder="Example: College Building, Room 204" />
-      </label>
+          <label class="full-width">
+            Supporting Evidence (optional)
+            <input type="file" />
+            <small>Accepted: screenshots, photos, or document proofs relevant to the case.</small>
+          </label>
+        </div>
 
-      <label class="full-width">
-        People Involved (if applicable)
-        <textarea rows="3" placeholder="Provide names, roles, and section/office if known."></textarea>
-      </label>
+        <div class="form-actions split">
+          <button type="button" class="link-btn" (click)="backToInfo()">Back</button>
+          <button type="button" class="submit-btn" (click)="continueToReview()">Continue to Review</button>
+        </div>
+      </section>
+    }
 
-      <label class="full-width">
-        Complaint Summary
-        <input type="text" required placeholder="One-sentence summary of your concern" />
-      </label>
+    @if (currentStep === 3) {
+      <section class="step-card">
+        <h3>Step 3 - Review & Submit</h3>
+        <p class="muted">Quick check before final submission.</p>
 
-      <label class="full-width">
-        Detailed Narrative
-        <textarea rows="7" required placeholder="Describe the incident in chronological order. Include dates, actions taken, and any prior reports."></textarea>
-      </label>
+        <div class="review-grid">
+          <div><strong>Account:</strong> {{ verifiedEmail || draft.reporterEmail || 'Not verified' }}</div>
+          <div><strong>Privacy:</strong> {{ submitAnonymously ? 'Identity Protected' : 'Full Identity' }}</div>
+          <div><strong>Category:</strong> {{ draft.category || 'Not selected' }}</div>
+          <div><strong>Priority:</strong> {{ draft.priority || 'Medium' }}</div>
+          <div><strong>Date:</strong> {{ draft.incidentDate || 'Not selected' }}</div>
+          <div><strong>Location:</strong> {{ draft.location || 'Not provided' }}</div>
+          <div class="full-width"><strong>Summary:</strong> {{ draft.summary || 'Not provided' }}</div>
+        </div>
 
-      <label class="full-width">
-        Preferred Resolution / Requested Action
-        <textarea rows="4" required placeholder="Explain what outcome or action you are requesting from the university office."></textarea>
-      </label>
+        <label class="full-width checkbox-row">
+          <input type="checkbox" required />
+          <span>I confirm that the details provided are accurate and submitted in good faith.</span>
+        </label>
 
-      <label class="full-width">
-        Supporting Evidence (optional)
-        <input type="file" />
-        <small>Accepted: screenshots, photos, or document proofs relevant to the case.</small>
-      </label>
+        @if (!registrationChecked || !isRegisteredUser) {
+          <p class="submit-helper">
+            Please complete account verification before submitting this complaint.
+          </p>
+        }
 
-      <label class="full-width checkbox-row">
-        <input type="checkbox" required />
-        <span>I confirm that the details provided are accurate and submitted in good faith.</span>
-      </label>
-
-      @if (!registrationChecked || !isRegisteredUser) {
-        <p class="submit-helper full-width">
-          Please complete account verification above before submitting this complaint.
-        </p>
-      }
-
-      <div class="form-actions full-width">
-        <button type="submit" class="submit-btn" [disabled]="!registrationChecked || !isRegisteredUser">
-          Proceed to Submit Complaint
-        </button>
-      </div>
-    </div>
+        <div class="form-actions split">
+          <button type="button" class="link-btn" (click)="backToDetails()">Back</button>
+          <button type="submit" class="submit-btn" [disabled]="!registrationChecked || !isRegisteredUser">
+            Submit Complaint
+          </button>
+        </div>
+      </section>
+    }
   </form>
 
   @if (complaintSubmitted) {
