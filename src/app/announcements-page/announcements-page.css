@@ -1,0 +1,67 @@
+@import "../app.css";
+
+:host { display: block; }
+
+.menu-item.active::after { transform: scaleX(1); }
+.menu-item.active { background: rgba(255, 255, 255, 0.65); }
+
+.page-head {
+  margin-top: 4px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.title { margin: 0 0 6px; font-size: clamp(1.2rem, 2.1vw, 1.7rem); font-weight: 800; color: #20252b; }
+.sub { margin: 0; color: #5a6b7d; }
+
+.tools {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.tools input,
+.tools select {
+  border: 1px solid #c5ced8;
+  border-radius: 10px;
+  padding: 9px 10px;
+  font-family: "Times New Roman", Times, serif;
+  background: #fff;
+}
+
+.tools input { min-width: min(420px, 90vw); }
+
+.grid { margin-top: 12px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.card { background: #fff; border: 1px solid #d4dce3; border-radius: 12px; padding: 12px; box-shadow: 0 10px 18px rgba(27, 50, 66, 0.07); }
+.card.high { border-color: rgba(140, 17, 17, 0.35); box-shadow: 0 12px 20px rgba(140, 17, 17, 0.08); }
+.card.low { border-color: rgba(90, 107, 125, 0.35); }
+
+.meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; color: #5a6b7d; font-size: .78rem; }
+.pill { font-weight: 800; border-radius: 999px; padding: 2px 8px; background: rgba(212, 167, 63, 0.2); color: #4d0a14; }
+.pill-high { background: rgba(140, 17, 17, 0.15); color: #8c1111; }
+.pill-low { background: rgba(90, 107, 125, 0.15); color: #425466; }
+.by { font-weight: 700; }
+.time { margin-left: auto; }
+
+.card-title { margin: 10px 0 6px; font-size: 1.06rem; }
+.msg { margin: 0; color: #2f3a45; line-height: 1.5; white-space: pre-wrap; }
+
+.attachments { margin-top: 10px; border-top: 1px solid #eef2f6; padding-top: 10px; }
+.attachments ul { margin: 6px 0 0; padding-left: 18px; }
+.attachments li { margin-bottom: 6px; }
+.attachments a { color: #6b0f1a; font-weight: 700; }
+.attachments small { color: #5a6b7d; margin-left: 6px; }
+
+.empty { margin-top: 14px; border: 1px dashed #cbd6e1; background: #f8fafc; border-radius: 12px; padding: 12px; color: #425466; display: grid; gap: 6px; }
+
+@media (max-width: 1000px) {
+  .grid { grid-template-columns: 1fr; }
+  .time { margin-left: 0; }
+  .tools { justify-content: flex-start; }
+}
+

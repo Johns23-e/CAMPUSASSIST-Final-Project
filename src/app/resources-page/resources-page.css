@@ -1,0 +1,22 @@
+@import "../app.css";
+
+:host { display: block; }
+
+.menu-item.active::after { transform: scaleX(1); }
+.menu-item.active { background: rgba(255, 255, 255, 0.65); }
+
+.page-head { margin-top: 4px; }
+.title { margin: 0 0 6px; font-size: clamp(1.2rem, 2.1vw, 1.7rem); font-weight: 800; color: #20252b; }
+.sub { margin: 0; color: #5a6b7d; }
+
+.grid { margin-top: 12px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.card { background: #fff; border: 1px solid #d4dce3; border-radius: 12px; padding: 14px; box-shadow: 0 10px 18px rgba(27, 50, 66, 0.07); }
+.card h3 { margin: 0 0 6px; font-size: 1.05rem; }
+.card p { margin: 0 0 10px; color: #2f3a45; line-height: 1.5; }
+.card ul { margin: 0; padding-left: 18px; color: #2f3a45; }
+.card li { margin-bottom: 6px; }
+
+@media (max-width: 1000px) {
+  .grid { grid-template-columns: 1fr; }
+}
+

@@ -8,7 +8,7 @@ import { StaffAuthService } from '../staff-auth.service';
   selector: 'app-auth-page',
   imports: [RouterLink],
   templateUrl: './auth-page.html',
-  styleUrl: './auth-page.css'
+  styleUrls: ['./auth-page.css']
 })
 export class AuthPage {
   protected mode: 'login' | 'signup' = 'login';

@@ -1,0 +1,134 @@
+<div class="page-shell">
+  <header class="top-nav">
+    <div class="brand">
+      <div class="brand-logo">
+        <img
+          src="/EVSU.png"
+          alt="EVSU Logo"
+          [class.hidden]="logoFallback"
+          (error)="logoFallback = true"
+        />
+        <img
+          src="/EVSU.svg"
+          alt="EVSU Logo Fallback"
+          [class.hidden]="!logoFallback"
+        />
+      </div>
+      <p class="brand-text">CAMPUSASSIST COMPLAINT SYSTEM</p>
+    </div>
+
+    <nav class="menu">
+      @for (item of navItems; track item) {
+        <a
+          class="menu-item"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          [routerLink]="item === 'home' ? ['/'] : item === 'announcements' ? ['/announcements'] : ['/resources']"
+        >
+          {{ t(item) }}
+        </a>
+      }
+    </nav>
+
+    <div class="actions">
+      <a [routerLink]="['/login']" [queryParams]="{ role: 'student' }" class="login-btn">
+        {{ t('login') }} <span class="profile-dot"></span>
+      </a>
+      <label class="language language-select">
+        <span>{{ t('language') }}:</span>
+        <select [value]="currentLanguage()" (change)="setLanguage($event)">
+          <option value="en">English</option>
+          <option value="tl">Tagalog</option>
+          <option value="bi">Bisaya</option>
+          <option value="war">Waray-Waray</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <main class="content">
+    <section class="page-head">
+      <div>
+        <p class="eyebrow">OFFICIAL UPDATES</p>
+        <h2 class="title">Announcements</h2>
+        <p class="sub">Posted by EVSU Dulag Admin and SSG Officers.</p>
+      </div>
+      <div class="tools">
+        <input
+          type="text"
+          placeholder="Search title, message, or author…"
+          [value]="query"
+          (input)="query = $any($event.target).value"
+        />
+        <select [value]="priority" (change)="priority = $any($event.target).value">
+          <option value="All">All priorities</option>
+          <option value="High">High</option>
+          <option value="Normal">Normal</option>
+          <option value="Low">Low</option>
+        </select>
+      </div>
+    </section>
+
+    @if (filtered.length === 0) {
+      <div class="empty">
+        <strong>No announcements found.</strong>
+        <span>Try changing your search or priority filter.</span>
+      </div>
+    } @else {
+      <div class="grid">
+        @for (a of filtered; track a.id) {
+          <article class="card" [class.high]="a.priority === 'High'" [class.low]="a.priority === 'Low'">
+            <div class="meta">
+              <span class="pill" [class.pill-high]="a.priority === 'High'" [class.pill-low]="a.priority === 'Low'">
+                {{ a.priority }}
+              </span>
+              <span class="by">{{ a.createdBy.name }} · {{ a.createdBy.role.toUpperCase() }}</span>
+              <span class="time">{{ formatDateTime(a.createdAt) }}</span>
+            </div>
+
+            <h3 class="card-title">{{ a.title }}</h3>
+            <p class="msg">{{ a.message }}</p>
+
+            @if (a.attachments && a.attachments.length > 0) {
+              <div class="attachments">
+                <strong>Attachments</strong>
+                <ul>
+                  @for (att of a.attachments; track att.fileName) {
+                    <li>
+                      <a [href]="att.dataUrl" [attr.download]="att.fileName">{{ att.fileName }}</a>
+                      <small>{{ formatFileSize(att.fileSize) }}</small>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          </article>
+        }
+      </div>
+    }
+  </main>
+
+  <footer class="footer">
+    <div class="footer-grid">
+      <section>
+        <h3>CampusAssist Complaint System</h3>
+        <p>Eastern Visayas State University - Dulag Campus</p>
+        <p>Empowering a safer and more responsive campus environment.</p>
+      </section>
+      <section>
+        <h3>{{ t('footerContact') }}</h3>
+        <p>Email: johnroque.abina@evsu.edu.ph</p>
+        <p>Phone: +63 915 418 4430</p>
+        <p>{{ t('officeHours') }}: Mon-Fri, 8:00 AM - 5:00 PM</p>
+      </section>
+      <section>
+        <h3>{{ t('footerQuickLinks') }}</h3>
+        <a [routerLink]="['/']">{{ t('home') }}</a>
+        <a [routerLink]="['/announcements']">{{ t('announcements') }}</a>
+        <a [routerLink]="['/resources']">{{ t('resources') }}</a>
+      </section>
+    </div>
+    <p class="footer-bottom">© 2026 Eastern Visayas State University. All rights reserved.</p>
+  </footer>
+</div>
+

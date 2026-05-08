@@ -1,14 +1,16 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthStateService } from '../auth-state.service';
-import { ComplaintAssignee, ComplaintRecord, ComplaintService } from '../complaint.service';
-import { LanguageCode, LanguageService } from '../language.service';
+import { ComplaintAssignee, ComplaintProofAttachment, ComplaintRecord, ComplaintService } from '../complaint.service';
+import { LanguageService } from '../language.service';
+
+type AdminSection = 'dashboard' | 'newComplaints' | 'inProgress' | 'resolved' | 'userManagement' | 'reports';
 
 @Component({
   selector: 'app-admin-dashboard',
   imports: [RouterLink],
   templateUrl: './admin-dashboard.html',
-  styleUrl: './admin-dashboard.css'
+  styleUrls: ['./admin-dashboard.css']
 })
 export class AdminDashboard {
   constructor(
@@ -27,6 +29,9 @@ export class AdminDashboard {
   ];
 
   protected readonly resolutionDraft: Record<string, string> = {};
+  protected readonly progressDraft: Record<string, string> = {};
+  protected readonly proofDraft: Record<string, ComplaintProofAttachment | undefined> = {};
+  protected readonly uploadErrorDraft: Record<string, string> = {};
 
   protected reload(): void {
     this.complaints = this.complaintService.list();
@@ -35,91 +40,160 @@ export class AdminDashboard {
       .map((s) => ({ fullName: s.fullName, username: s.username }));
   }
 
-  protected readonly sidebarItems = [
-    { key: 'dashboard', active: true },
-    { key: 'newComplaints', active: false },
-    { key: 'inProgress', active: false },
-    { key: 'resolved', active: false },
-    { key: 'userManagement', active: false },
-    { key: 'reports', active: false }
+  protected readonly sidebarItems: Array<{ key: AdminSection }> = [
+    { key: 'dashboard' },
+    { key: 'newComplaints' },
+    { key: 'inProgress' },
+    { key: 'resolved' },
+    { key: 'userManagement' },
+    { key: 'reports' }
   ];
+  protected selectedSection: AdminSection = 'dashboard';
 
   protected get stats() {
+    const total = this.complaints.length;
+    const today = this.complaints.filter((c) => this.isToday(c.createdAt)).length;
+    const active = this.inProgressComplaints.length;
+    const unassigned = this.complaints.filter((c) => c.assignee.type === 'unassigned' && c.status !== 'Resolved').length;
+    const resolved = this.resolvedComplaints.length;
+    const resolvedThisMonth = this.resolvedComplaints.filter((c) => this.isThisMonth(c.resolvedAt)).length;
+    const avgDays = this.averageResolutionDays;
+    const satisfaction = Math.min(98, 70 + Math.round(this.resolutionRateNumber * 0.28));
+    const rating = (3 + (satisfaction / 100) * 2).toFixed(1);
+
     return [
-      { label: this.t('totalComplaintsReceived'), value: '2,450', meta: 'Today: 15', tone: 'red' },
-      { label: this.t('currentActiveComplaints'), value: '415', meta: 'Needs review', tone: 'dark' },
-      { label: this.t('newUnassignedComplaints'), value: '58', meta: 'Priority queue', tone: 'gold' },
-      { label: this.t('resolvedComplaints'), value: '1,977', meta: '+4.3% this month', tone: 'green' },
-      { label: this.t('avgResolutionTime'), value: '3.1 Days', meta: 'Target: below 4 days', tone: 'maroon' },
-      { label: this.t('studentSatisfaction'), value: '92%', meta: '4.6 / 5 rating', tone: 'amber' }
+      { label: this.t('totalComplaintsReceived'), value: this.formatNumber(total), meta: `Today: ${today}`, tone: 'red' },
+      { label: this.t('currentActiveComplaints'), value: this.formatNumber(active), meta: 'Needs review', tone: 'dark' },
+      { label: this.t('newUnassignedComplaints'), value: this.formatNumber(unassigned), meta: 'Priority queue', tone: 'gold' },
+      { label: this.t('resolvedComplaints'), value: this.formatNumber(resolved), meta: `This month: ${resolvedThisMonth}`, tone: 'green' },
+      { label: this.t('avgResolutionTime'), value: `${avgDays.toFixed(1)} Days`, meta: 'Target: below 4 days', tone: 'maroon' },
+      { label: this.t('studentSatisfaction'), value: `${satisfaction}%`, meta: `${rating} / 5 rating`, tone: 'amber' }
     ];
   }
 
-  protected readonly monthlySubmissions = [
-    { month: 'Jan', value: 98 },
-    { month: 'Feb', value: 67 },
-    { month: 'Mar', value: 115 },
-    { month: 'Apr', value: 139 },
-    { month: 'May', value: 103 },
-    { month: 'Jun', value: 124 },
-    { month: 'Jul', value: 280 },
-    { month: 'Aug', value: 200 },
-    { month: 'Sep', value: 170 },
-    { month: 'Oct', value: 92 },
-    { month: 'Nov', value: 175 },
-    { month: 'Dec', value: 73 }
-  ];
+  protected get monthlySubmissions(): Array<{ month: string; value: number }> {
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return monthNames.map((month, index) => ({
+      month,
+      value: this.complaints.filter((c) => new Date(c.createdAt).getMonth() === index).length
+    }));
+  }
 
-  protected readonly statusBreakdown = [
-    { month: 'Jan', new: 40, inProgress: 34, review: 24, resolved: 38 },
-    { month: 'Feb', new: 45, inProgress: 39, review: 27, resolved: 52 },
-    { month: 'Mar', new: 50, inProgress: 45, review: 30, resolved: 60 },
-    { month: 'Apr', new: 42, inProgress: 41, review: 32, resolved: 58 },
-    { month: 'May', new: 44, inProgress: 40, review: 30, resolved: 54 },
-    { month: 'Jun', new: 48, inProgress: 43, review: 31, resolved: 55 },
-    { month: 'Jul', new: 51, inProgress: 47, review: 35, resolved: 62 },
-    { month: 'Aug', new: 49, inProgress: 42, review: 33, resolved: 60 },
-    { month: 'Sep', new: 38, inProgress: 35, review: 26, resolved: 50 },
-    { month: 'Oct', new: 35, inProgress: 33, review: 24, resolved: 45 },
-    { month: 'Nov', new: 46, inProgress: 40, review: 30, resolved: 64 },
-    { month: 'Dec', new: 58, inProgress: 44, review: 33, resolved: 92 }
-  ];
+  protected get statusBreakdown(): Array<{ month: string; new: number; inProgress: number; review: number; resolved: number }> {
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return monthNames.map((month, index) => {
+      const monthComplaints = this.complaints.filter((c) => new Date(c.createdAt).getMonth() === index);
+      const newCount = monthComplaints.filter((c) => c.status === 'New').length;
+      const assignedCount = monthComplaints.filter((c) => c.status === 'Assigned' || c.status === 'In Progress').length;
+      const reviewCount = monthComplaints.filter((c) => c.status === 'In Review').length;
+      const resolvedCount = monthComplaints.filter((c) => c.status === 'Resolved').length;
+      return { month, new: newCount, inProgress: assignedCount, review: reviewCount, resolved: resolvedCount };
+    });
+  }
 
-  protected readonly topCategories = [
-    { name: 'Academic', value: 28, tone: '#7f0000' },
-    { name: 'Administrative', value: 20, tone: '#a73a2e' },
-    { name: 'Facilities', value: 14, tone: '#c79b2d' },
-    { name: 'Student Affairs', value: 12, tone: '#d8b97a' },
-    { name: 'Security', value: 10, tone: '#6f9f74' },
-    { name: 'Services', value: 8, tone: '#7fb089' },
-    { name: 'Others', value: 8, tone: '#a6bccb' }
-  ];
+  protected get topCategories(): Array<{ name: string; value: number; tone: string }> {
+    const tones = ['#7f0000', '#a73a2e', '#c79b2d', '#d8b97a', '#6f9f74', '#7fb089', '#a6bccb'];
+    const total = this.complaints.length;
+    if (total === 0) {
+      return [{ name: 'No Data', value: 0, tone: '#a6bccb' }];
+    }
 
-  protected readonly priorityComplaints = [
-    { id: 'ID00123', priority: 'High', title: 'Grading Discrepancy', date: '2024-05-18', assignee: 'JOHN ROQUE ABINA', status: 'Under Review' },
-    { id: 'ID00124', priority: 'Medium', title: 'Late Enrollment Concern', date: '2024-05-18', assignee: 'MALQUISTO CHERWYN', status: 'For Action' },
-    { id: 'ID00125', priority: 'High', title: 'Scholarship Delay', date: '2024-05-19', assignee: 'JOANNA MAE MAGTABOG', status: 'In Progress' }
-  ];
+    const counts = new Map<string, number>();
+    for (const complaint of this.complaints) {
+      counts.set(complaint.category, (counts.get(complaint.category) ?? 0) + 1);
+    }
+
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 7)
+      .map(([name, count], index) => ({
+        name,
+        value: Math.round((count / total) * 100),
+        tone: tones[index % tones.length]
+      }));
+  }
+
+  protected get priorityComplaints(): Array<{ id: string; priority: string; title: string; date: string; assignee: string; status: string }> {
+    const rank = { High: 3, Medium: 2, Low: 1 } as const;
+    return [...this.complaints]
+      .sort((a, b) => {
+        const priorityDiff = rank[b.priority] - rank[a.priority];
+        if (priorityDiff !== 0) return priorityDiff;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      })
+      .slice(0, 5)
+      .map((c) => ({
+        id: c.id,
+        priority: c.priority,
+        title: c.summary,
+        date: this.formatDate(c.createdAt),
+        assignee: this.assigneeLabel(c.assignee),
+        status: c.status
+      }));
+  }
 
   protected readonly recentAssignments = [
-    'New high-priority complaint from Campus A - Oct 12',
+    'New high-priority complaint from EVSU Dulag Campus - Oct 12',
     'Reminder: 3 in-progress cases overdue',
     'Assigned 5 new cases to Student Services',
     'Forwarded 2 facilities issues to Engineering Office'
   ];
 
   protected readonly notifications = [
-    'New high-priority complaint from Campus A',
+    'New high-priority complaint from EVSU Dulag Campus',
     '3 complaints approaching deadline',
     '2 users submitted follow-up evidence',
     'System generated weekly analytics report'
   ];
 
-  protected maxMonthlyValue = Math.max(...this.monthlySubmissions.map((item) => item.value));
+  protected get weeklyTrend(): Array<{ day: string; received: number; resolved: number }> {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(today.getDate() - 6);
+    start.setHours(0, 0, 0, 0);
 
-  protected maxStatusTotal = Math.max(
-    ...this.statusBreakdown.map((item) => item.new + item.inProgress + item.review + item.resolved)
-  );
+    const result: Array<{ day: string; received: number; resolved: number }> = [];
+    for (let i = 0; i < 7; i++) {
+      const dayDate = new Date(start);
+      dayDate.setDate(start.getDate() + i);
+      const label = days[dayDate.getDay()];
+      const received = this.complaints.filter((c) => this.isSameDay(c.createdAt, dayDate)).length;
+      const resolved = this.complaints.filter((c) => this.isSameDay(c.resolvedAt, dayDate)).length;
+      result.push({ day: label, received, resolved });
+    }
+    return result;
+  }
+
+  protected readonly dulagUnitWorkload = [
+    { unit: 'Student Affairs', volume: 42 },
+    { unit: 'Registrar', volume: 31 },
+    { unit: 'Facilities', volume: 24 },
+    { unit: 'Guidance Office', volume: 16 }
+  ];
+
+  protected readonly resolutionSla = [
+    { label: '< 24h', value: 22, tone: '#2f7e2f' },
+    { label: '1-3 days', value: 44, tone: '#b18419' },
+    { label: '4-7 days', value: 23, tone: '#8a1f1f' },
+    { label: '> 7 days', value: 11, tone: '#5d0b17' }
+  ];
+
+  protected get maxMonthlyValue(): number {
+    return Math.max(1, ...this.monthlySubmissions.map((item) => item.value));
+  }
+
+  protected get maxStatusTotal(): number {
+    return Math.max(1, ...this.statusBreakdown.map((item) => item.new + item.inProgress + item.review + item.resolved));
+  }
+
+  protected get maxWeeklyValue(): number {
+    return Math.max(1, ...this.weeklyTrend.flatMap((item) => [item.received, item.resolved]));
+  }
+
+  protected get maxDulagUnitVolume(): number {
+    return Math.max(1, ...this.dulagUnitWorkload.map((item) => item.volume));
+  }
 
   protected assign(id: string, raw: string): void {
     const next: ComplaintAssignee =
@@ -137,6 +211,37 @@ export class AdminDashboard {
     this.resolutionDraft[id] = value;
   }
 
+  protected setProgressDraft(id: string, value: string): void {
+    this.progressDraft[id] = value;
+  }
+
+  protected async handleProofFile(id: string, event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) {
+      this.proofDraft[id] = undefined;
+      this.uploadErrorDraft[id] = '';
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      this.uploadErrorDraft[id] = 'File too large. Please upload 2MB or smaller.';
+      input.value = '';
+      return;
+    }
+    try {
+      const dataUrl = await this.readFileAsDataUrl(file);
+      this.proofDraft[id] = {
+        fileName: file.name,
+        mimeType: file.type || 'application/octet-stream',
+        fileSize: file.size,
+        dataUrl
+      };
+      this.uploadErrorDraft[id] = '';
+    } catch {
+      this.uploadErrorDraft[id] = 'Failed to read file. Please try another file.';
+    }
+  }
+
   protected resolve(id: string): void {
     const notes = (this.resolutionDraft[id] ?? '').trim() || 'Resolved by admin.';
     this.complaintService.resolve(id, notes, { type: 'admin' });
@@ -144,21 +249,150 @@ export class AdminDashboard {
     this.reload();
   }
 
+  protected sendUpdate(id: string, status: 'In Review' | 'In Progress' | 'Resolved'): void {
+    const message = (this.progressDraft[id] ?? '').trim();
+    if (!message) return;
+
+    this.complaintService.addUpdate(id, {
+      status,
+      message,
+      proofAttachment: this.proofDraft[id],
+      actor: { role: 'admin', name: 'Administrator' }
+    });
+
+    this.progressDraft[id] = '';
+    this.proofDraft[id] = undefined;
+    this.uploadErrorDraft[id] = '';
+    this.reload();
+  }
+
+  protected formatDateTime(rawIso?: string): string {
+    if (!rawIso) return '-';
+    const date = new Date(rawIso);
+    if (Number.isNaN(date.getTime())) return rawIso;
+    return date.toLocaleString();
+  }
+
+  protected formatFileSize(bytes?: number): string {
+    if (!bytes) return '0 B';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
   protected removeStudent(username: string): void {
     this.authState.removeRegisteredStudent(username);
     this.reload();
+  }
+
+  protected selectSection(key: AdminSection): void {
+    this.selectedSection = key;
+  }
+
+  protected isSection(key: AdminSection): boolean {
+    return this.selectedSection === key;
+  }
+
+  protected get newComplaints(): ComplaintRecord[] {
+    return this.complaints.filter((c) => c.status === 'New');
+  }
+
+  protected get inProgressComplaints(): ComplaintRecord[] {
+    return this.complaints.filter((c) => c.status === 'In Review' || c.status === 'Assigned' || c.status === 'In Progress');
+  }
+
+  protected get resolvedComplaints(): ComplaintRecord[] {
+    return this.complaints.filter((c) => c.status === 'Resolved');
+  }
+
+  protected get totalOpenComplaints(): number {
+    return this.newComplaints.length + this.inProgressComplaints.length;
+  }
+
+  protected get highPriorityOpen(): number {
+    return this.inProgressComplaints.filter((c) => c.priority === 'High').length + this.newComplaints.filter((c) => c.priority === 'High').length;
+  }
+
+  protected get anonymousRate(): string {
+    if (this.complaints.length === 0) return '0%';
+    const anonymous = this.complaints.filter((c) => 'anonymous' in c.createdBy).length;
+    return `${Math.round((anonymous / this.complaints.length) * 100)}%`;
+  }
+
+  protected get resolutionRate(): string {
+    if (this.complaints.length === 0) return '0%';
+    return `${Math.round((this.resolvedComplaints.length / this.complaints.length) * 100)}%`;
+  }
+
+  protected get resolutionRateNumber(): number {
+    if (this.complaints.length === 0) return 0;
+    return Math.round((this.resolvedComplaints.length / this.complaints.length) * 100);
+  }
+
+  protected get averageResolutionDays(): number {
+    const resolvedWithDates = this.resolvedComplaints.filter((c) => !!c.resolvedAt);
+    if (resolvedWithDates.length === 0) return 0;
+
+    const totalDays = resolvedWithDates.reduce((sum, c) => {
+      const created = new Date(c.createdAt).getTime();
+      const resolved = new Date(c.resolvedAt as string).getTime();
+      const diffDays = Math.max(0, (resolved - created) / (1000 * 60 * 60 * 24));
+      return sum + diffDays;
+    }, 0);
+
+    return totalDays / resolvedWithDates.length;
+  }
+
+  private formatNumber(value: number): string {
+    return new Intl.NumberFormat('en-US').format(value);
+  }
+
+  private formatDate(rawIso: string): string {
+    const date = new Date(rawIso);
+    if (Number.isNaN(date.getTime())) return rawIso;
+    return date.toISOString().slice(0, 10);
+  }
+
+  private isToday(rawIso: string): boolean {
+    const date = new Date(rawIso);
+    const now = new Date();
+    return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+  }
+
+  private isThisMonth(rawIso?: string): boolean {
+    if (!rawIso) return false;
+    const date = new Date(rawIso);
+    const now = new Date();
+    return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+  }
+
+  private isSameDay(rawIso: string | undefined, dayDate: Date): boolean {
+    if (!rawIso) return false;
+    const date = new Date(rawIso);
+    return (
+      date.getFullYear() === dayDate.getFullYear() &&
+      date.getMonth() === dayDate.getMonth() &&
+      date.getDate() === dayDate.getDate()
+    );
+  }
+
+  private assigneeLabel(assignee: ComplaintAssignee): string {
+    if (assignee.type === 'unassigned') return 'Unassigned';
+    if (assignee.type === 'admin') return 'Admin';
+    return assignee.displayName;
+  }
+
+  private readFileAsDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ''));
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
   }
 
   protected t(key: string): string {
     return this.language.t(key);
   }
 
-  protected currentLanguage(): LanguageCode {
-    return this.language.currentLanguage();
-  }
-
-  protected setLanguage(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value as LanguageCode;
-    this.language.setLanguage(value);
-  }
 }

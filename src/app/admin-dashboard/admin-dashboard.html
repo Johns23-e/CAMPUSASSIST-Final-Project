@@ -4,130 +4,160 @@
       <img src="/EVSU.png" alt="EVSU Logo" onerror="this.src='/EVSU.svg'" />
       <span>CAMPUSASSIST COMPLAINT SYSTEM</span>
     </div>
-    <label class="admin-language">
-      <span>{{ t('language') }}:</span>
-      <select [value]="currentLanguage()" (change)="setLanguage($event)">
-        <option value="en">English</option>
-        <option value="tl">Tagalog</option>
-        <option value="bi">Bisaya</option>
-        <option value="war">Waray-Waray</option>
-      </select>
-    </label>
     <a class="logout" [routerLink]="['/login']" [queryParams]="{ role: 'admin' }">{{ t('logout') }}</a>
   </header>
 
   <main class="admin-main">
     <aside class="sidebar">
       @for (item of sidebarItems; track item) {
-        <a [class.active]="item.active" href="#">{{ t(item.key) }}</a>
+        <a [class.active]="isSection(item.key)" href="" (click)="$event.preventDefault(); selectSection(item.key)">{{ t(item.key) }}</a>
       }
     </aside>
 
     <section class="content">
-      <h1>{{ t('adminDashboardOverview') }}</h1>
-
-      <div class="stats-grid">
-        @for (item of stats; track item.label) {
-          <article class="stat" [class]="item.tone">
-            <h3>{{ item.label }}</h3>
-            <p>{{ item.value }}</p>
-            <span>{{ item.meta }}</span>
-          </article>
-        }
-      </div>
-
-      <div class="charts-row">
-        <article class="panel">
-          <h2>{{ t('monthlySubmissions') }}</h2>
-          <div class="chart-bars">
-            @for (item of monthlySubmissions; track item.month) {
-              <div class="bar-col">
-                <div class="bar" [style.height.%]="(item.value / maxMonthlyValue) * 100"></div>
-                <span>{{ item.month }}</span>
-              </div>
-            }
+      @if (isSection('dashboard')) {
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">ADMIN DASHBOARD</p>
+            <h1>{{ t('adminDashboardOverview') }}</h1>
           </div>
-        </article>
+          <div class="chip-row">
+            <span class="chip">Open: {{ totalOpenComplaints }}</span>
+            <span class="chip">High Priority: {{ highPriorityOpen }}</span>
+            <span class="chip">Resolution Rate: {{ resolutionRate }}</span>
+          </div>
+        </div>
 
-        <article class="panel">
-          <h2>{{ t('statusBreakdown') }}</h2>
-          <div class="chart-stack">
-            @for (item of statusBreakdown; track item.month) {
-              <div class="stack-col">
-                <div class="stack-bar">
-                  <span class="seg new" [style.height.%]="(item.new / maxStatusTotal) * 100"></span>
-                  <span class="seg in-progress" [style.height.%]="(item.inProgress / maxStatusTotal) * 100"></span>
-                  <span class="seg review" [style.height.%]="(item.review / maxStatusTotal) * 100"></span>
-                  <span class="seg resolved" [style.height.%]="(item.resolved / maxStatusTotal) * 100"></span>
+        <div class="stats-grid">
+          @for (item of stats; track item.label) {
+            <article class="stat" [class]="item.tone">
+              <h3>{{ item.label }}</h3>
+              <p>{{ item.value }}</p>
+              <span>{{ item.meta }}</span>
+            </article>
+          }
+        </div>
+
+        <div class="insight-grid">
+          <article class="panel">
+            <h2>Weekly Intake vs Resolution</h2>
+            <p class="panel-sub">Monitor if daily resolution output keeps up with new submissions.</p>
+            <div class="mini-bars">
+              @for (item of weeklyTrend; track item.day) {
+                <div class="mini-col">
+                  <div class="mini-stack">
+                    <span class="mini recv" [style.height.%]="(item.received / maxWeeklyValue) * 100"></span>
+                    <span class="mini done" [style.height.%]="(item.resolved / maxWeeklyValue) * 100"></span>
+                  </div>
+                  <small>{{ item.day }}</small>
                 </div>
-                <span>{{ item.month }}</span>
-              </div>
-            }
-          </div>
-        </article>
-
-        <article class="panel">
-          <h2>{{ t('topCategories') }}</h2>
-          <div class="category-list">
-            @for (item of topCategories; track item.name) {
-              <div class="category-row">
-                <span>{{ item.name }}</span>
-                <div class="track">
-                  <div class="fill" [style.width.%]="item.value" [style.background]="item.tone"></div>
-                </div>
-                <small>{{ item.value }}%</small>
-              </div>
-            }
-          </div>
-        </article>
-      </div>
-
-      <div class="tables-row">
-        <article class="panel wide">
-          <h2>{{ t('priorityComplaints') }}</h2>
-          <table>
-            <thead><tr><th>Comp. ID</th><th>Priority</th><th>Title</th><th>Date Filed</th><th>Assignee</th><th>Status</th></tr></thead>
-            <tbody>
-              @for (item of priorityComplaints; track item.id) {
-                <tr>
-                  <td>{{ item.id }}</td>
-                  <td><span class="badge" [class.high]="item.priority === 'High'" [class.med]="item.priority === 'Medium'">{{ item.priority }}</span></td>
-                  <td>{{ item.title }}</td>
-                  <td>{{ item.date }}</td>
-                  <td>{{ item.assignee }}</td>
-                  <td>{{ item.status }}</td>
-                </tr>
               }
-            </tbody>
-          </table>
-        </article>
-        <article class="panel">
-          <h2>{{ t('recentAssignments') }}</h2>
-          <ul>
-            @for (item of recentAssignments; track item) {
-              <li>{{ item }}</li>
-            }
-          </ul>
-        </article>
-        <article class="panel">
-          <h2>{{ t('notifications') }}</h2>
-          <ul>
-            @for (item of notifications; track item) {
-              <li>{{ item }}</li>
-            }
-          </ul>
-        </article>
-      </div>
+            </div>
+          </article>
 
-      <div class="tables-row" style="grid-template-columns: 2fr 1fr;">
+          <article class="panel">
+            <h2>Resolution SLA Mix</h2>
+            <p class="panel-sub">Breakdown of time-to-resolution bands for service-level health.</p>
+            <div class="donut-wrap">
+              <div class="donut"></div>
+              <div class="legend">
+                @for (s of resolutionSla; track s.label) {
+                  <div class="legend-row">
+                    <span class="dot" [style.background]="s.tone"></span>
+                    <span>{{ s.label }}</span>
+                    <strong>{{ s.value }}%</strong>
+                  </div>
+                }
+              </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <h2>EVSU Dulag Unit Workload</h2>
+            <p class="panel-sub">Track high-volume offices in EVSU Dulag to improve assignment routing and staffing.</p>
+            <div class="workload">
+              @for (unit of dulagUnitWorkload; track unit.unit) {
+                <div class="work-row">
+                  <span>{{ unit.unit }}</span>
+                  <div class="track">
+                    <div class="fill" [style.width.%]="(unit.volume / maxDulagUnitVolume) * 100"></div>
+                  </div>
+                  <strong>{{ unit.volume }}</strong>
+                </div>
+              }
+            </div>
+          </article>
+        </div>
+
+        <div class="tables-row">
+          <article class="panel wide">
+            <h2>{{ t('priorityComplaints') }}</h2>
+            <table>
+              <thead><tr><th>Comp. ID</th><th>Priority</th><th>Title</th><th>Date Filed</th><th>Assignee</th><th>Status</th></tr></thead>
+              <tbody>
+                @for (item of priorityComplaints; track item.id) {
+                  <tr>
+                    <td>{{ item.id }}</td>
+                    <td><span class="badge" [class.high]="item.priority === 'High'" [class.med]="item.priority === 'Medium'">{{ item.priority }}</span></td>
+                    <td>{{ item.title }}</td>
+                    <td>{{ item.date }}</td>
+                    <td>{{ item.assignee }}</td>
+                    <td>{{ item.status }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </article>
+          <article class="panel">
+            <h2>{{ t('recentAssignments') }}</h2>
+            <ul>
+              @for (item of recentAssignments; track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+          </article>
+          <article class="panel">
+            <h2>{{ t('notifications') }}</h2>
+            <ul>
+              @for (item of notifications; track item) {
+                <li>{{ item }}</li>
+              }
+            </ul>
+          </article>
+        </div>
+      } @else if (isSection('newComplaints') || isSection('inProgress') || isSection('resolved')) {
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">CASE MANAGEMENT</p>
+            <h1>{{ t(isSection('newComplaints') ? 'newComplaints' : isSection('inProgress') ? 'inProgress' : 'resolved') }}</h1>
+          </div>
+          <div class="chip-row">
+            @if (isSection('newComplaints')) {
+              <span class="chip">Queue Size: {{ newComplaints.length }}</span>
+              <span class="chip">Needs Assignment</span>
+            } @else if (isSection('inProgress')) {
+              <span class="chip">Active Cases: {{ inProgressComplaints.length }}</span>
+              <span class="chip">Monitor Deadlines</span>
+            } @else {
+              <span class="chip">Closed Cases: {{ resolvedComplaints.length }}</span>
+              <span class="chip">Audit Notes Ready</span>
+            }
+          </div>
+        </div>
         <article class="panel wide">
           <h2>Complaint Assignment & Resolution</h2>
           <p style="margin: 0 0 10px; color: #4d5d6d; font-size: 0.92rem;">
-            View all submitted complaints, assign them to SSG Officer, or resolve as Admin.
+            @if (isSection('newComplaints')) {
+              Review and assign newly submitted complaints.
+            } @else if (isSection('inProgress')) {
+              Track active complaints that are under review, assigned, or in progress.
+            } @else {
+              View resolved complaints and their final notes.
+            }
           </p>
 
-          @if (complaints.length === 0) {
-            <p style="margin: 0; color: #4d5d6d;">No complaints submitted yet.</p>
+          @if ((isSection('newComplaints') ? newComplaints : isSection('inProgress') ? inProgressComplaints : resolvedComplaints).length === 0) {
+            <p style="margin: 0; color: #4d5d6d;">No complaints found in this section.</p>
           } @else {
             <div class="table-wrap">
               <table>
@@ -140,11 +170,11 @@
                     <th>Created By</th>
                     <th>Status</th>
                     <th>Assign To</th>
-                    <th>Resolve</th>
+                    <th>Actions / Updates</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @for (c of complaints; track c.id) {
+                  @for (c of (isSection('newComplaints') ? newComplaints : isSection('inProgress') ? inProgressComplaints : resolvedComplaints); track c.id) {
                     <tr>
                       <td>{{ c.id }}</td>
                       <td>
@@ -164,6 +194,7 @@
                       <td>{{ c.status }}</td>
                       <td>
                         <select
+                          [disabled]="c.status === 'Resolved'"
                           (change)="assign(c.id, $any($event.target).value)"
                           [value]="c.assignee.type === 'unassigned' ? 'unassigned' : c.assignee.type === 'admin' ? 'admin' : c.assignee.username"
                         >
@@ -177,21 +208,66 @@
                         </select>
                       </td>
                       <td>
-                        @if (c.status !== 'Resolved') {
-                          <div style="display: grid; gap: 6px;">
-                            <input
-                              type="text"
-                              placeholder="Resolution notes"
-                              [value]="resolutionDraft[c.id] || ''"
-                              (input)="setDraft(c.id, $any($event.target).value)"
-                            />
-                            <button type="button" class="logout" style="padding: 6px 10px;" (click)="resolve(c.id)">
-                              Resolve
-                            </button>
+                        <details>
+                          <summary style="cursor:pointer; color:#6b0f1a; font-weight:700;">View Form / Post Update</summary>
+                          <div style="display:grid; gap:8px; margin-top:8px; min-width:260px;">
+                            <div style="padding:8px; border:1px solid #dde5ec; border-radius:8px; background:#f8fafc;">
+                              <strong>Submitted Form</strong><br />
+                              <small><strong>Incident Date:</strong> {{ c.incidentDate }}</small><br />
+                              <small><strong>Location:</strong> {{ c.location }}</small><br />
+                              <small><strong>Narrative:</strong> {{ c.narrative }}</small><br />
+                              <small><strong>Requested Action:</strong> {{ c.requestedAction }}</small>
+                            </div>
+
+                            @if (c.updates && c.updates.length > 0) {
+                              <div style="padding:8px; border:1px solid #dde5ec; border-radius:8px; background:#fff;">
+                                <strong>Update Timeline</strong>
+                                <ul style="margin:6px 0 0; padding-left:16px;">
+                                  @for (u of c.updates; track u.id) {
+                                    <li>
+                                      <small>
+                                        {{ formatDateTime(u.createdAt) }} - <strong>{{ u.actorName }}</strong> ({{ u.status }}): {{ u.message }}
+                                        @if (u.proofAttachment) {
+                                          - <a [href]="u.proofAttachment.dataUrl" [attr.download]="u.proofAttachment.fileName">download proof</a>
+                                          ({{ formatFileSize(u.proofAttachment.fileSize) }})
+                                        }
+                                      </small>
+                                    </li>
+                                  }
+                                </ul>
+                              </div>
+                            }
+
+                            @if (c.status !== 'Resolved') {
+                              <textarea
+                                rows="3"
+                                placeholder="Send progress/review update to student"
+                                [value]="progressDraft[c.id] || ''"
+                                (input)="setProgressDraft(c.id, $any($event.target).value)"
+                              >{{ progressDraft[c.id] || '' }}</textarea>
+                              <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.webm,.mov,.pdf,.doc,.docx" (change)="handleProofFile(c.id, $event)" />
+                              @if (proofDraft[c.id]) {
+                                <small style="color:#4d5d6d;">Attached: {{ proofDraft[c.id]?.fileName }} ({{ formatFileSize(proofDraft[c.id]?.fileSize) }})</small>
+                              }
+                              @if (uploadErrorDraft[c.id]) {
+                                <small style="color:#8c1111;">{{ uploadErrorDraft[c.id] }}</small>
+                              }
+                              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                <button type="button" class="logout" style="padding: 6px 10px;" (click)="sendUpdate(c.id, 'In Review')">Send In-Review Update</button>
+                                <button type="button" class="logout" style="padding: 6px 10px;" (click)="sendUpdate(c.id, 'In Progress')">Send In-Progress Update</button>
+                              </div>
+                              <input
+                                type="text"
+                                placeholder="Resolution notes"
+                                [value]="resolutionDraft[c.id] || ''"
+                                (input)="setDraft(c.id, $any($event.target).value)"
+                              />
+                              <button type="button" class="logout" style="padding: 6px 10px;" (click)="resolve(c.id)">Resolve</button>
+                            } @else {
+                              <small style="color:#4d5d6d;">{{ c.resolutionNotes || 'Resolved' }}</small>
+                            }
                           </div>
-                        } @else {
-                          <small style="color:#4d5d6d;">Resolved</small>
-                        }
+                        </details>
                       </td>
                     </tr>
                   }
@@ -200,38 +276,139 @@
             </div>
           }
         </article>
-
-        <article class="panel">
-          <h2>User Management</h2>
-          <p style="margin: 0 0 10px; color: #4d5d6d; font-size: 0.92rem;">
-            Manage registered students (local demo storage).
-          </p>
-
-          <h3 style="margin: 10px 0 6px; font-size: 0.95rem;">Students</h3>
-          @if (students.length === 0) {
-            <p style="margin: 0; color: #4d5d6d;">No registered students yet.</p>
-          } @else {
-            <ul style="margin: 0; padding-left: 18px;">
-              @for (s of students; track s.username) {
-                <li style="margin-bottom: 8px;">
-                  <strong>{{ s.fullName }}</strong><br />
-                  <small style="color:#4d5d6d;">{{ s.username }}</small><br />
-                  <button type="button" class="logout" style="padding: 6px 10px; margin-top: 6px;" (click)="removeStudent(s.username)">
-                    Remove
-                  </button>
+      } @else if (isSection('userManagement')) {
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">ADMINISTRATION</p>
+            <h1>{{ t('userManagement') }}</h1>
+          </div>
+          <div class="chip-row">
+            <span class="chip">Students: {{ students.length }}</span>
+            <span class="chip">Officers: {{ officers.length }}</span>
+            <span class="chip">Anonymous Reporting: {{ anonymousRate }}</span>
+          </div>
+        </div>
+        <div class="tables-row">
+          <article class="panel">
+            <h2>Students</h2>
+            <p class="panel-sub">Manage registered student records in local demo storage.</p>
+            @if (students.length === 0) {
+              <p style="margin: 0; color: #4d5d6d;">No registered students yet.</p>
+            } @else {
+              <ul class="clean-list">
+                @for (s of students; track s.username) {
+                  <li>
+                    <strong>{{ s.fullName }}</strong>
+                    <small>{{ s.username }}</small>
+                    <button type="button" class="logout" style="padding: 6px 10px; margin-top: 6px;" (click)="removeStudent(s.username)">
+                      Remove
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </article>
+          <article class="panel">
+            <h2>SSG Officers</h2>
+            <p class="panel-sub">Current officers available for assignment routing.</p>
+            <ul class="clean-list">
+              @for (o of officers; track o.username) {
+                <li>
+                  <strong>{{ o.displayName }}</strong>
+                  <small>{{ o.username }}</small>
                 </li>
               }
             </ul>
-          }
+          </article>
+          <article class="panel">
+            <h2>Data Governance</h2>
+            <p class="panel-sub">Compliance and account quality indicators.</p>
+            <div class="legend">
+              <div class="legend-row"><span class="dot" style="background:#2f7e2f;"></span><span>Complaint records complete</span><strong>96%</strong></div>
+              <div class="legend-row"><span class="dot" style="background:#b18419;"></span><span>Profiles verified</span><strong>89%</strong></div>
+              <div class="legend-row"><span class="dot" style="background:#8a1f1f;"></span><span>Need profile updates</span><strong>11%</strong></div>
+            </div>
+          </article>
+        </div>
+      } @else if (isSection('reports')) {
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">ANALYTICS</p>
+            <h1>{{ t('reports') }}</h1>
+          </div>
+          <div class="chip-row">
+            <span class="chip">Monthly View</span>
+            <span class="chip">Status Trend</span>
+            <span class="chip">Category Distribution</span>
+          </div>
+        </div>
+        <div class="charts-row">
+          <article class="panel">
+            <h2>{{ t('monthlySubmissions') }}</h2>
+            <div class="chart-bars">
+              @for (item of monthlySubmissions; track item.month) {
+                <div class="bar-col">
+                  <div class="bar" [style.height.%]="(item.value / maxMonthlyValue) * 100"></div>
+                  <span>{{ item.month }}</span>
+                </div>
+              }
+            </div>
+          </article>
 
-          <h3 style="margin: 12px 0 6px; font-size: 0.95rem;">SSG Officers</h3>
-          <ul style="margin: 0; padding-left: 18px;">
-            @for (o of officers; track o.username) {
-              <li><strong>{{ o.displayName }}</strong> <small style="color:#4d5d6d;">({{ o.username }})</small></li>
-            }
-          </ul>
-        </article>
-      </div>
+          <article class="panel">
+            <h2>{{ t('statusBreakdown') }}</h2>
+            <div class="chart-stack">
+              @for (item of statusBreakdown; track item.month) {
+                <div class="stack-col">
+                  <div class="stack-bar">
+                    <span class="seg new" [style.height.%]="(item.new / maxStatusTotal) * 100"></span>
+                    <span class="seg in-progress" [style.height.%]="(item.inProgress / maxStatusTotal) * 100"></span>
+                    <span class="seg review" [style.height.%]="(item.review / maxStatusTotal) * 100"></span>
+                    <span class="seg resolved" [style.height.%]="(item.resolved / maxStatusTotal) * 100"></span>
+                  </div>
+                  <span>{{ item.month }}</span>
+                </div>
+              }
+            </div>
+          </article>
+
+          <article class="panel">
+            <h2>{{ t('topCategories') }}</h2>
+            <div class="category-list">
+              @for (item of topCategories; track item.name) {
+                <div class="category-row">
+                  <span>{{ item.name }}</span>
+                  <div class="track">
+                    <div class="fill" [style.width.%]="item.value" [style.background]="item.tone"></div>
+                  </div>
+                  <small>{{ item.value }}%</small>
+                </div>
+              }
+            </div>
+          </article>
+        </div>
+
+        <div class="insight-grid">
+          <article class="panel">
+            <h2>Operational Signals</h2>
+            <p class="panel-sub">Auto-generated weekly observations for leadership briefing.</p>
+            <ul class="clean-list">
+              <li><strong>Peak demand:</strong><small>Thursday has highest complaint intake.</small></li>
+              <li><strong>Backlog risk:</strong><small>High-priority queue should be reviewed twice daily.</small></li>
+              <li><strong>Dulag focus:</strong><small>Student Affairs currently receives the highest case volume.</small></li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h2>Forecast Snapshot</h2>
+            <p class="panel-sub">Expected trend if current submission-to-resolution ratio is maintained.</p>
+            <div class="legend">
+              <div class="legend-row"><span class="dot" style="background:#7f0000;"></span><span>Projected new complaints (next 7 days)</span><strong>~166</strong></div>
+              <div class="legend-row"><span class="dot" style="background:#2f7e2f;"></span><span>Projected resolutions (next 7 days)</span><strong>~155</strong></div>
+              <div class="legend-row"><span class="dot" style="background:#b18419;"></span><span>Potential carry-over backlog</span><strong>~11</strong></div>
+            </div>
+          </article>
+        </div>
+      }
     </section>
   </main>
 

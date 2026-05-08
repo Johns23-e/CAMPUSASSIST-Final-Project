@@ -53,9 +53,6 @@
         <a href="#" class="minor-link">{{ t('forgotPassword') }}</a>
         <button type="submit" class="submit-btn">{{ t('logIn') }}</button>
       </form>
-      @if (role === 'admin') {
-        <p class="hint">{{ t('adminDemoHint') }}</p>
-      }
       @if (authError) {
         <p class="error-text">{{ authError }}</p>
       }

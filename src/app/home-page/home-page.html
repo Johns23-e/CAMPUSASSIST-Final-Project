@@ -19,7 +19,12 @@
 
     <nav class="menu">
       @for (item of navItems; track item) {
-        <a href="#" class="menu-item">{{ t(item) }}</a>
+        <a
+          class="menu-item"
+          [routerLink]="item === 'home' ? ['/'] : item === 'announcements' ? ['/announcements'] : ['/resources']"
+        >
+          {{ t(item) }}
+        </a>
       }
     </nav>
 

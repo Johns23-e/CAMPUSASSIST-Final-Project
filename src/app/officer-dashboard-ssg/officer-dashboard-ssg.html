@@ -2,195 +2,309 @@
   <header class="topbar">
     <div class="brand">
       <img src="/EVSU.png" alt="EVSU Logo" onerror="this.src='/EVSU.svg'" />
-      <span>CAMPUSASSIST OFFICER DASHBOARD</span>
+      <span>CAMPUSASSIST SSG DASHBOARD - EVSU DULAG</span>
     </div>
 
     <div class="top-actions">
-      <label class="lang">
-        <span>{{ t('language') }}:</span>
-        <select [value]="currentLanguage()" (change)="setLanguage($event)">
-          <option value="en">EN</option>
-          <option value="tl">TL</option>
-          <option value="bi">BI</option>
-          <option value="war">WAR</option>
-        </select>
-      </label>
       <button type="button" class="login-btn" (click)="logout()">LOGOUT</button>
     </div>
   </header>
 
   <div class="body">
     <aside class="sidebar">
-      @for (item of sidebarLinks; track item.label) {
-        <a href="#" [class.active]="item.active">{{ item.label }}</a>
+      @for (item of sidebarLinks; track item.key) {
+        <a href="" [class.active]="isSection(item.key)" (click)="$event.preventDefault(); selectSection(item.key)">{{ item.label }}</a>
       }
     </aside>
 
     <main class="content">
-      <h1>OFFICER DASHBOARD - SSG OVERVIEW</h1>
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">SUPREME STUDENT GOVERNMENT</p>
+          <h1>{{ isSection('dashboard') ? 'SSG Dashboard Overview' : isSection('assigned') ? 'My Assignments' : isSection('inProgress') ? 'In-Progress Cases' : isSection('resolved') ? 'Resolved Cases' : isSection('reports') ? 'Officer Reports' : 'Officer Profile' }}</h1>
+        </div>
+        <div class="chip-row">
+          <span class="chip">Officer: {{ officerName }}</span>
+          <span class="chip">Assigned: {{ myAssignedComplaints.length }}</span>
+          <span class="chip">Active: {{ myInProgressComplaints.length }}</span>
+        </div>
+      </div>
 
-      <section class="metrics">
-        @for (m of metrics; track m.label) {
-          <article class="tile" [class]="m.tone">
-            <p class="label">{{ m.label }}</p>
-            <strong class="value">{{ m.value }}</strong>
-            @if (m.meta) {
+      @if (isSection('dashboard')) {
+        <section class="metrics">
+          @for (m of metrics; track m.label) {
+            <article class="tile" [class]="m.tone">
+              <p class="label">{{ m.label }}</p>
+              <strong class="value">{{ m.value }}</strong>
               <span class="meta">{{ m.meta }}</span>
-            }
-          </article>
-        }
-      </section>
+            </article>
+          }
+        </section>
 
-      <section class="upper-grid">
-        <article class="panel">
-          <div class="panel-head">
-            <div>
-              <h2>Complaint Intake & Distribution</h2>
-              <p class="panel-subtitle">Total Received, last 6 months</p>
+        <section class="upper-grid">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>7-Day Intake vs Resolutions</h2>
+                <p class="panel-subtitle">Assigned EVSU Dulag complaints handled by this SSG officer.</p>
+              </div>
             </div>
-          </div>
-          <div class="intake-chart">
-            @for (item of intakeTrend; track item.month) {
-              <div class="intake-col">
-                <div class="bars">
-                  <span class="bar a" [style.height.%]="(item.campusA / maxIntakeValue) * 100"></span>
-                  <span class="bar b" [style.height.%]="(item.campusB / maxIntakeValue) * 100"></span>
+            <div class="chart-legend">
+              <span><i class="dot recv"></i> Received</span>
+              <span><i class="dot done"></i> Resolved</span>
+            </div>
+            <div class="intake-chart">
+              @for (item of weeklyIntake; track item.day) {
+                <div class="intake-col">
+                  <div class="bars">
+                    <span class="bar a" [style.height.%]="(item.received / maxWeeklyValue) * 100"></span>
+                    <span class="bar b" [style.height.%]="(item.resolved / maxWeeklyValue) * 100"></span>
+                  </div>
+                  <small>{{ item.day }}</small>
                 </div>
-                <small>{{ item.month }}</small>
-              </div>
-            }
-          </div>
-        </article>
-
-        <article class="panel">
-          <div class="panel-head">
-            <div>
-              <h2>PRIORITY STUDENT CONCERNS</h2>
-            </div>
-          </div>
-          <div class="concerns-grid">
-            @for (c of concerns; track c.title) {
-              <article class="concern" [class.dark]="c.tone === 'dark'">
-                <p>{{ c.title }}</p>
-                <small>{{ c.age }}</small>
-              </article>
-            }
-          </div>
-        </article>
-
-        <div class="right-stack">
-          <article class="panel">
-            <div class="panel-head">
-              <div>
-                <h2>SEARCH CASES</h2>
-              </div>
-            </div>
-            <div class="search-row">
-              <input type="text" placeholder="Search Reference ID, Complainant..." />
-              <button type="button">Search</button>
+              }
             </div>
           </article>
 
           <article class="panel">
             <div class="panel-head">
               <div>
-                <h2>SSG BROADCASTS & NOTICES</h2>
+                <h2>Top Concern Categories</h2>
+                <p class="panel-subtitle">Distribution of assigned complaint categories.</p>
               </div>
             </div>
-            <ul class="broadcasts">
-              @for (b of broadcasts; track b.message) {
-                <li>
-                  <span class="msg">{{ b.message }}</span>
-                  <span class="date">{{ b.date }}</span>
-                </li>
+            <div class="category-list">
+              @for (cat of topCategories; track cat.name) {
+                <div class="category-row">
+                  <span>{{ cat.name }}</span>
+                  <div class="track"><div class="fill" [style.width.%]="cat.value" [style.background]="cat.tone"></div></div>
+                  <small>{{ cat.value }}%</small>
+                </div>
               }
+            </div>
+          </article>
+
+          <div class="right-stack">
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <h2>Investigation Notes</h2>
+                </div>
+              </div>
+              <ul class="simple-list">
+                @for (item of recentNotes; track item) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <h2>Action Guide</h2>
+                </div>
+              </div>
+              <ul class="simple-list">
+                <li>Review newly assigned high-priority cases first.</li>
+                <li>Add investigation notes before changing status.</li>
+                <li>Mark as resolved only after concrete action is completed.</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+      } @else if (isSection('assigned') || isSection('inProgress') || isSection('resolved')) {
+        <section class="lower-grid full">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>
+                  {{
+                    isSection('assigned')
+                      ? 'All Cases Assigned to Me'
+                      : isSection('inProgress')
+                        ? 'My Active In-Progress Cases'
+                        : 'My Resolved Cases'
+                  }}
+                </h2>
+                <p class="panel-subtitle">
+                  @if (isSection('assigned')) {
+                    Handle all assigned complaints and submit complete solutions.
+                  } @else if (isSection('inProgress')) {
+                    Continue active investigations and update status regularly.
+                  } @else {
+                    Review closed cases and documented resolution notes.
+                  }
+                </p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Case ID</th>
+                    <th>Priority</th>
+                    <th>Category</th>
+                    <th>Summary</th>
+                    <th>Status</th>
+                    <th>Date Filed</th>
+                    <th>Assignee</th>
+                    <th>Officer Action / Form View</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (
+                    row of (
+                      isSection('assigned') ? myAssignedComplaints :
+                      isSection('inProgress') ? myInProgressComplaints :
+                      myResolvedComplaints
+                    );
+                    track row.id
+                  ) {
+                    <tr>
+                      <td>{{ row.id }}</td>
+                      <td><span class="pill" [class.high]="row.priority === 'High'" [class.med]="row.priority !== 'High'">{{ row.priority }}</span></td>
+                      <td>{{ row.category }}</td>
+                      <td>{{ row.summary }}</td>
+                      <td>{{ row.status }}</td>
+                      <td>{{ formatDate(row.createdAt) }}</td>
+                      <td>{{ assigneeLabel(row) }}</td>
+                      <td>
+                        <details>
+                          <summary style="cursor:pointer; color:#6b0f1a; font-weight:700;">Open Case Tools</summary>
+                          <div class="action-form" style="margin-top:8px;">
+                            <div style="padding:8px; border:1px solid #dde5ec; border-radius:8px; background:#f8fafc;">
+                              <strong>Submitted Form</strong><br />
+                              <small><strong>Incident Date:</strong> {{ row.incidentDate }}</small><br />
+                              <small><strong>Location:</strong> {{ row.location }}</small><br />
+                              <small><strong>Narrative:</strong> {{ row.narrative }}</small><br />
+                              <small><strong>Requested Action:</strong> {{ row.requestedAction }}</small>
+                            </div>
+                            @if (row.updates && row.updates.length > 0) {
+                              <div style="padding:8px; border:1px solid #dde5ec; border-radius:8px; background:#fff;">
+                                <strong>Update Timeline</strong>
+                                <ul style="margin:6px 0 0; padding-left:16px;">
+                                  @for (u of row.updates; track u.id) {
+                                    <li>
+                                      <small>
+                                        {{ formatDateTime(u.createdAt) }} - <strong>{{ u.actorName }}</strong> ({{ u.status }}): {{ u.message }}
+                                        @if (u.proofAttachment) {
+                                          - <a [href]="u.proofAttachment.dataUrl" [attr.download]="u.proofAttachment.fileName">download proof</a>
+                                          ({{ formatFileSize(u.proofAttachment.fileSize) }})
+                                        }
+                                      </small>
+                                    </li>
+                                  }
+                                </ul>
+                              </div>
+                            }
+                            @if (row.status !== 'Resolved') {
+                              <select [value]="statusDraft[row.id] || row.status" (change)="updateStatus(row.id, $any($event.target).value)">
+                                <option value="In Review">In Review</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Resolved">Resolved</option>
+                              </select>
+                              <textarea
+                                placeholder="Put your solution / process update"
+                                rows="3"
+                                (input)="setNoteDraft(row.id, $any($event.target).value)"
+                              >{{ noteDraft[row.id] || '' }}</textarea>
+                              <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp,.mp4,.webm,.mov,.pdf,.doc,.docx" (change)="handleProofFile(row.id, $event)" />
+                              @if (proofDraft[row.id]) {
+                                <small>Attached: {{ proofDraft[row.id]?.fileName }} ({{ formatFileSize(proofDraft[row.id]?.fileSize) }})</small>
+                              }
+                              @if (uploadErrorDraft[row.id]) {
+                                <small style="color:#8c1111;">{{ uploadErrorDraft[row.id] }}</small>
+                              }
+                              <button type="button" class="compose" (click)="resolveCase(row.id)">Submit Solution</button>
+                            } @else {
+                              <small class="resolved-tag">Resolved and submitted.</small>
+                            }
+                          </div>
+                        </details>
+                      </td>
+                    </tr>
+                  }
+                  @if ((isSection('assigned') ? myAssignedComplaints : isSection('inProgress') ? myInProgressComplaints : myResolvedComplaints).length === 0) {
+                    <tr>
+                      <td colspan="8">
+                        <div class="empty-state">
+                          <strong>No complaints available in this section yet.</strong>
+                          <span>Once admin assigns cases to your SSG account, they will appear here.</span>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+      } @else if (isSection('reports')) {
+        <section class="upper-grid">
+          <article class="panel">
+            <h2>Weekly Case Throughput</h2>
+            <p class="panel-subtitle">Received vs resolved cases under your SSG assignment.</p>
+            <div class="intake-chart">
+              @for (item of weeklyIntake; track item.day) {
+                <div class="intake-col">
+                  <div class="bars">
+                    <span class="bar a" [style.height.%]="(item.received / maxWeeklyValue) * 100"></span>
+                    <span class="bar b" [style.height.%]="(item.resolved / maxWeeklyValue) * 100"></span>
+                  </div>
+                  <small>{{ item.day }}</small>
+                </div>
+              }
+            </div>
+          </article>
+
+          <article class="panel">
+            <h2>Category Coverage</h2>
+            <div class="category-list">
+              @for (cat of topCategories; track cat.name) {
+                <div class="category-row">
+                  <span>{{ cat.name }}</span>
+                  <div class="track"><div class="fill" [style.width.%]="cat.value" [style.background]="cat.tone"></div></div>
+                  <small>{{ cat.value }}%</small>
+                </div>
+              }
+            </div>
+          </article>
+
+          <article class="panel">
+            <h2>Officer Insights</h2>
+            <ul class="simple-list">
+              <li>Focus first on high-priority cases that are still pending review.</li>
+              <li>Document every action before marking cases resolved.</li>
+              <li>Keep response time under 4 days for best service quality.</li>
             </ul>
           </article>
-        </div>
-      </section>
+        </section>
+      } @else if (isSection('profile')) {
+        <section class="upper-grid">
+          <article class="panel">
+            <h2>Officer Account</h2>
+            <ul class="simple-list">
+              <li><strong>Name:</strong> {{ officerName }}</li>
+              <li><strong>Username:</strong> {{ officerUsername || 'Not available' }}</li>
+              <li><strong>Role:</strong> SSG Officer</li>
+              <li><strong>Campus:</strong> EVSU Dulag</li>
+            </ul>
+          </article>
 
-      <section class="lower-grid">
-        <article class="panel wide">
-          <div class="panel-head">
-            <div>
-              <h2>MY ASSIGNED CASES</h2>
-            </div>
-          </div>
-          <div class="table-head">
-            <label>
-              <span>Sort by</span>
-              <select>
-                <option>Priority</option>
-                <option>Date Assigned</option>
-                <option>Status</option>
-              </select>
-            </label>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Ref. ID</th>
-                  <th>Priority</th>
-                  <th>Title</th>
-                  <th>Complainant</th>
-                  <th>Date Assigned</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (row of assignedCases; track row.id) {
-                  <tr>
-                    <td>{{ row.id }}</td>
-                    <td>
-                      <span class="pill" [class.high]="row.priority === 'HIGH'" [class.med]="row.priority !== 'HIGH'">
-                        {{ row.priority }}
-                      </span>
-                    </td>
-                    <td>{{ row.title }}</td>
-                    <td>{{ row.complainant }}</td>
-                    <td>{{ row.dateAssigned }}</td>
-                    <td class="pre">{{ row.status }}</td>
-                    <td class="pre action">{{ row.action }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-        <article class="panel">
-          <div class="panel-head">
-            <div>
-              <h2>INVESTIGATION UPDATES</h2>
-            </div>
-          </div>
-          <ul class="simple-list">
-            @for (item of investigationUpdates; track item) {
-              <li>{{ item }}</li>
-            }
-          </ul>
-        </article>
-
-        <article class="panel">
-          <div class="panel-head">
-            <div>
-              <h2>MY MESSAGES</h2>
-              <p class="panel-subtitle">OFFICER MESSAGES</p>
-            </div>
-          </div>
-          <ul class="simple-list">
-            @for (item of officerMessages; track item) {
-              <li>{{ item }}</li>
-            }
-          </ul>
-          <button type="button" class="compose">Compose Internal Message</button>
-        </article>
-      </section>
+          <article class="panel">
+            <h2>Performance Snapshot</h2>
+            <ul class="simple-list">
+              <li><strong>Total Assigned:</strong> {{ myAssignedComplaints.length }}</li>
+              <li><strong>Active:</strong> {{ myInProgressComplaints.length }}</li>
+              <li><strong>Resolved:</strong> {{ myResolvedComplaints.length }}</li>
+              <li><strong>Avg Resolution:</strong> {{ averageResolutionDays.toFixed(1) }} days</li>
+            </ul>
+          </article>
+        </section>
+      }
     </main>
   </div>
 
-  <footer class="footer">© 2024 Eastern Visayas State University</footer>
+  <footer class="footer">© 2026 Eastern Visayas State University - EVSU Dulag Campus</footer>
 </section>
 

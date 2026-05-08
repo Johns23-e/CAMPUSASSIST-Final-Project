@@ -7,7 +7,7 @@ import { LanguageCode, LanguageService } from '../language.service';
   selector: 'app-home-page',
   imports: [RouterLink],
   templateUrl: './home-page.html',
-  styleUrl: '../app.css'
+  styleUrls: ['../app.css']
 })
 export class HomePage {
   constructor(

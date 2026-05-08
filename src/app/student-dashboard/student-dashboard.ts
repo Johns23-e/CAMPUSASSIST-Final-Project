@@ -1,16 +1,17 @@
 import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthStateService } from '../auth-state.service';
-import { LanguageCode, LanguageService } from '../language.service';
+import { ComplaintRecord, ComplaintService } from '../complaint.service';
+import { LanguageService } from '../language.service';
 
-type ComplaintStatus = 'New' | 'In Review' | 'Action Ongoing' | 'Resolved';
+type ComplaintStatus = 'New' | 'In Review' | 'Assigned' | 'In Progress' | 'Resolved';
 type ComplaintPriority = 'High' | 'Medium' | 'Low';
 
 @Component({
   selector: 'app-student-dashboard',
   imports: [RouterLink],
   templateUrl: './student-dashboard.html',
-  styleUrl: './student-dashboard.css'
+  styleUrls: ['./student-dashboard.css']
 })
 export class StudentDashboard {
   protected readonly username: string;
@@ -25,55 +26,7 @@ export class StudentDashboard {
     'sdSidebarResources'
   ];
 
-  protected readonly complaints: Array<{
-    id: string;
-    title: string;
-    category: string;
-    dateFiled: string;
-    office: string;
-    status: ComplaintStatus;
-    priority: ComplaintPriority;
-    dueBy: string;
-    nextAction: string;
-    updatedAt: string;
-  }> = [
-    {
-      id: 'CAS-2026-0012',
-      title: 'Grade discrepancy concern in IT 304',
-      category: 'Academic Concern',
-      dateFiled: '2026-03-28',
-      office: 'College Dean Office',
-      status: 'In Review',
-      priority: 'High',
-      dueBy: '2026-04-18',
-      nextAction: 'Upload grade computation screenshot requested by Dean Office.',
-      updatedAt: '2026-04-12 09:40 AM'
-    },
-    {
-      id: 'CAS-2026-0018',
-      title: 'Water supply interruption in CEA Building',
-      category: 'Facilities and Maintenance',
-      dateFiled: '2026-04-05',
-      office: 'Campus Engineering Office',
-      status: 'Action Ongoing',
-      priority: 'Medium',
-      dueBy: '2026-04-20',
-      nextAction: 'Wait for facilities completion update from Engineering Office.',
-      updatedAt: '2026-04-13 02:20 PM'
-    },
-    {
-      id: 'CAS-2026-0004',
-      title: 'Delayed scholarship posting concern',
-      category: 'Financial, Scholarship, or Billing',
-      dateFiled: '2026-02-18',
-      office: 'Student Services',
-      status: 'Resolved',
-      priority: 'Low',
-      dueBy: '2026-03-02',
-      nextAction: 'No further action needed. Case already closed.',
-      updatedAt: '2026-03-01 11:15 AM'
-    }
-  ];
+  protected complaints: ComplaintRecord[] = [];
 
   protected readonly recentUpdates: string[] = [
     'sdAnnouncement1',
@@ -106,6 +59,7 @@ export class StudentDashboard {
 
   constructor(
     private readonly authState: AuthStateService,
+    private readonly complaintService: ComplaintService,
     private readonly router: Router,
     private readonly language: LanguageService
   ) {
@@ -114,7 +68,13 @@ export class StudentDashboard {
 
     if (!this.username) {
       this.router.navigate(['/login'], { queryParams: { role: 'student' } });
+      return;
     }
+    this.reload();
+  }
+
+  protected reload(): void {
+    this.complaints = this.complaintService.listByCreator(this.username);
   }
 
   protected get totalComplaints(): number {
@@ -141,6 +101,31 @@ export class StudentDashboard {
     return this.complaints.filter((item) => item.priority === 'High' && item.status !== 'Resolved').length;
   }
 
+  protected get liveStatusUpdates(): string[] {
+    const updates = this.complaints.flatMap((c) =>
+      (c.updates ?? []).map((u) => `${c.id}: ${u.status} - ${u.message}${u.proofAttachment ? ' (with proof file)' : ''}`)
+    );
+    return updates.length > 0 ? updates.slice(-5).reverse() : ['No staff updates yet.'];
+  }
+
+  protected latestUpdateAt(c: ComplaintRecord): string {
+    const latest = c.updates && c.updates.length > 0 ? c.updates[c.updates.length - 1].createdAt : c.createdAt;
+    return this.formatDateTime(latest);
+  }
+
+  protected formatDate(rawIso: string): string {
+    const date = new Date(rawIso);
+    if (Number.isNaN(date.getTime())) return rawIso;
+    return date.toISOString().slice(0, 10);
+  }
+
+  protected formatDateTime(rawIso?: string): string {
+    if (!rawIso) return '-';
+    const date = new Date(rawIso);
+    if (Number.isNaN(date.getTime())) return rawIso;
+    return date.toLocaleString();
+  }
+
   protected get notificationCount(): number {
     return this.recentUpdates.length;
   }
@@ -149,17 +134,8 @@ export class StudentDashboard {
     return 2;
   }
 
-  protected currentLanguage(): LanguageCode {
-    return this.language.currentLanguage();
-  }
-
   protected t(key: string): string {
     return this.language.t(key);
-  }
-
-  protected setLanguage(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value as LanguageCode;
-    this.language.setLanguage(value);
   }
 
   protected logout(): void {
@@ -169,7 +145,7 @@ export class StudentDashboard {
 
   protected statusText(status: ComplaintStatus): string {
     if (status === 'In Review') return this.t('sdStatusInReview');
-    if (status === 'Action Ongoing') return this.t('sdStatusActionOngoing');
+    if (status === 'Assigned' || status === 'In Progress') return this.t('sdStatusActionOngoing');
     if (status === 'Resolved') return this.t('sdStatusResolved');
     return this.t('sdStatusNew');
   }

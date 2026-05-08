@@ -7,7 +7,7 @@ import { ComplaintService } from '../complaint.service';
   selector: 'app-complaint-form-page',
   imports: [RouterLink],
   templateUrl: './complaint-form-page.html',
-  styleUrl: './complaint-form-page.css'
+  styleUrls: ['./complaint-form-page.css']
 })
 export class ComplaintFormPage {
   protected currentStep: 1 | 2 | 3 = 1;

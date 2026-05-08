@@ -6,15 +6,6 @@
     </div>
 
     <div class="top-actions">
-      <label class="lang">
-        <span>{{ t('language') }}:</span>
-        <select [value]="currentLanguage()" (change)="setLanguage($event)">
-          <option value="en">English</option>
-          <option value="tl">Tagalog</option>
-          <option value="bi">Bisaya</option>
-          <option value="war">Waray-Waray</option>
-        </select>
-      </label>
       <button type="button" class="login-btn" (click)="logout()">Logout</button>
     </div>
   </header>
@@ -108,11 +99,37 @@
                   <tr>
                     <td>{{ item.id }}</td>
                     <td><span class="category-tag">{{ item.category.split(' ')[0] }}</span></td>
-                    <td>{{ item.title }}</td>
-                    <td>{{ item.dateFiled }}</td>
-                    <td>{{ item.updatedAt }}</td>
+                    <td>{{ item.summary }}</td>
+                    <td>{{ formatDate(item.createdAt) }}</td>
+                    <td>{{ latestUpdateAt(item) }}</td>
                     <td><span class="status-tag" [class.resolved]="item.status === 'Resolved'">{{ statusText(item.status) }}</span></td>
-                    <td><a href="#">{{ t('sdViewDetailMessage') }}</a></td>
+                    <td>
+                      <details>
+                        <summary style="cursor:pointer; color:#6b0f1a; font-weight:700;">View Details</summary>
+                        <div style="display:grid; gap:6px; margin-top:6px;">
+                          <small><strong>Location:</strong> {{ item.location }}</small>
+                          <small><strong>Narrative:</strong> {{ item.narrative }}</small>
+                          <small><strong>Requested Action:</strong> {{ item.requestedAction }}</small>
+                          @if (item.updates && item.updates.length > 0) {
+                            <small><strong>Staff Updates:</strong></small>
+                            <ul style="margin:0; padding-left:16px;">
+                              @for (u of item.updates; track u.id) {
+                                <li>
+                                  <small>
+                                    {{ formatDateTime(u.createdAt) }} - {{ u.actorName }} ({{ u.status }}): {{ u.message }}
+                                    @if (u.proofAttachment) {
+                                      - <a [href]="u.proofAttachment.dataUrl" [attr.download]="u.proofAttachment.fileName">Download Proof</a>
+                                    }
+                                  </small>
+                                </li>
+                              }
+                            </ul>
+                          } @else {
+                            <small>No staff updates yet.</small>
+                          }
+                        </div>
+                      </details>
+                    </td>
                   </tr>
                 }
               </tbody>
@@ -123,8 +140,8 @@
         <article class="panel">
           <h2>{{ t('sdComplaintStatusUpdates') }}</h2>
           <ul class="bullet-list">
-            @for (item of statusUpdates; track item) {
-              <li>{{ t(item) }}</li>
+            @for (item of liveStatusUpdates; track item) {
+              <li>{{ item }}</li>
             }
           </ul>
         </article>
